@@ -106,7 +106,7 @@ class Labyrinth:
         self.steve_pos = [-1, -1]  # Decided upon generation
         self.posscoords = list(range(labsize))
 
-    def __repr__(self):
+    def layout(self) -> str:
         outputstr = ""
         for y in range(labsize):
             fulltopstr = ""
@@ -785,10 +785,6 @@ class Item:
         self.name = name
         self.item_type = item_type
 
-    def __repr__(self) -> str:
-        outputstr = f"Name: {self.name}\nType: {self.item_type}"
-        return outputstr
-
     def __str__(self) -> str:
         outputstr = f"Name: {self.name}\nType: {self.item_type}"
         return outputstr
@@ -799,9 +795,6 @@ class Food(Item):
     def __init__(self, name, item_type, hprestore):
         super().__init__(name, item_type)
         self.hprestore = hprestore
-
-    def __repr__(self):
-        return super().__repr__() + f"\nRestores: {self.hprestore} HP"
 
     def __str__(self):
         return super().__str__() + f"\nRestores: {self.hprestore} HP"
@@ -817,9 +810,6 @@ class Armor(Item):
         self.defence = defence
         self.armor_slot = armor_slot
 
-    def __repr__(self):
-        return super().__repr__() + f"\nProvides: {self.defence} defence"
-
     def __str__(self):
         return super().__str__() + f"\nProvides: {self.defence} defence"
 
@@ -832,9 +822,6 @@ class Weapon(Item):
     def __init__(self, name, item_type, attack):
         super().__init__(name, item_type)
         self.attack = attack
-
-    def __repr__(self):
-        return super().__repr__() + f"\nDoes: {self.attack} damage"
 
     def __str__(self):
         return super().__str__() + f"\nDoes: {self.attack} damage"
@@ -865,7 +852,7 @@ class Steve:
         self.weapon = None
         self.base_damage = 5  # default
 
-    def __repr__(self):
+    def __str__(self):
         return f"Steve has {self.health} HP."
 
     def display_inventory(self) -> None:
@@ -1006,7 +993,7 @@ class Creature:
         self.attack = self._generate_attack(attack, turn)
         self.maxhp = maxhp
 
-    def __repr__(self):
+    def __str__(self):
         return f"Name: {self.name}, HP:{self.hitpoints}/{self.maxhp}"
 
     def _generate_maxhp(self, maxhp: int, turn_number: int) -> None:
