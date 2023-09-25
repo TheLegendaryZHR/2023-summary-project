@@ -18,6 +18,27 @@ PI = 3.14159265359
 
 #STANLEY TEST
 
+class Coord:
+    """Encapsulates a pair of 2D coordinates.
+    Coordinates are represented as (x, y), with x and y being ints.
+    """
+    def __init__(self, x: int, y: int) -> None:
+        self.x = x
+        self.y = y
+
+    def is_adjacent(self, coord: "Coord") -> bool:
+        """Checks if coord is directly N, S, E, or W of self.
+        Returns True if yes, otherwise False.
+        """
+        if abs(self.x - coord.x) == 1 and (self.y - coord.y) == 0:
+            return True
+        if abs(self.y - coord.y) == 1 and (self.x - coord.x) == 0:
+            return True
+        return False
+
+    def direction_of(self, neighbour: "Coord") -> "Coord":
+        return Coord(neighbour.x - self.x, neighbour.y - self.y)
+
 
 def is_adjacent(room1: list[int], room2: list[int]) -> bool:
 
