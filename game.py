@@ -1,5 +1,5 @@
 #File containing the code for the game
-from data import *
+import data
 import random
 
 NORTH = "NORTH"
@@ -14,11 +14,11 @@ class MUDGame:
     def __init__(self) -> None:
         self.gameover = False  # default
         self.won = False  # default
-        self.maze = Labyrinth()
+        self.maze = data.Labyrinth()
         self.maze.generate()
-        self.steve = Steve()
+        self.steve = data.Steve()
         self.steve_path = []
-        self.boss = Boss()
+        self.boss = data.Boss()
 
     def introduce(self) -> None:
         """
