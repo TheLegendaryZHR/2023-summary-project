@@ -40,6 +40,14 @@ class Coord:
         return Coord(neighbour.x - self.x, neighbour.y - self.y)
 
 
+cardinal = {
+    "NORTH": Coord(0, 1),
+    "SOUTH": Coord(0, -1),
+    "EAST": Coord(0, 1),
+    "WEST": Coord(0, -1)
+}
+
+
 def is_adjacent(room1: list[int], room2: list[int]) -> bool:
 
     xdiff = room1[0] - room2[0]
@@ -123,8 +131,8 @@ class Labyrinth:
         for i in range(labsize):
             self.lab.append(nonelist.copy())
         self.difficulty_level = None
-        self.boss_pos = [-1, -1]  # Decided upon generation
-        self.steve_pos = [-1, -1]  # Decided upon generation
+        self.boss_pos = Coord(-1, -1)  # Decided upon generation
+        self.steve_pos = Coord(-1, -1)  # Decided upon generation
         self.posscoords = list(range(labsize))
 
     def layout(self) -> str:
