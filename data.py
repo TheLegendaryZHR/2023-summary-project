@@ -412,9 +412,7 @@ class LabyrinthManager:
         random.shuffle(directions)
         for direction in directions:
             if self.can_move_here(self.boss_pos, direction):
-                self.get_room(self.boss_pos).boss_leaves()
                 self.boss_pos = self.boss_pos.add(direction)
-                self.get_room(self.boss_pos).boss_enters()
                 return None
         raise RuntimeError(
             f"Boss cannot move because its room {self.boss_pos} is unlinked to neighbours."
@@ -425,9 +423,7 @@ class LabyrinthManager:
             raise ValueError(
                 "move_steve() attempted to move steve to a direction that is not possible."
             )
-        self.get_room(self.steve_pos).steve_leaves()
         self.steve_pos = self.steve_pos.add(direction)
-        self.get_room(self.steve_pos).steve_enters()
 
     def can_move_here(self, this_coords: Coord, direction: Coord) -> bool:
         """Tells whether an adjacent room is accessible.
