@@ -14,8 +14,8 @@ class MUDGame:
     def __init__(self) -> None:
         self.gameover = False  # default
         self.won = False  # default
-        self.maze = data.Labyrinth()
-        self.maze.generate()
+        labyrinth = data.LabyrinthGenerator().get_lab()
+        self.maze = data.LabyrinthManager(labyrinth)
         self.steve = data.Steve()
         self.steve_path = []
         self.boss = data.Boss()

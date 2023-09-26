@@ -14,10 +14,12 @@ PI = 3.14159265359
 
 #STANLEY TEST
 
+
 class Coord:
     """Encapsulates a pair of 2D coordinates.
     Coordinates are represented as (x, y), with x and y being ints.
     """
+
     def __init__(self, x: int, y: int) -> None:
         assert isinstance(x, int)
         assert isinstance(y, int)
@@ -55,12 +57,11 @@ cardinal = {
     "WEST": Coord(0, -1)
 }
 
-
 LABSIZE = 10  # cannot be too small!!
 
 
 def valid_coords(roomcoords: Coord) -> bool:
-   if i not in list(range(LABSIZE)) or j not in list(range(LABSIZE)):
+    if i not in list(range(LABSIZE)) or j not in list(range(LABSIZE)):
         return False
         print(
             f"valid_coords() says that roomcoords {roomcoords} elements are not within integers from 0 to {LABSIZE - 1}."
@@ -68,32 +69,282 @@ def valid_coords(roomcoords: Coord) -> bool:
     return True
 
 
-class Labyrinth:
+class LabyrinthGenerator:
+    """Generates a labyrinth for the game.
+    
+    -- ATTRIBUTES --
+    - lab: list[list[Room]]
+    
+    -- METHODS --
+    + generate(self) -> None
+    - generate_place_steve_boss() -> None:
+    - generate_link_rooms(room1coords: list, room2coords: list) -> None:
+    - generate_rooms_connected() -> bool:
+   """
+
+    def __init__(self):
+        self.lab = []
+        for _ in range(LABSIZE):
+            self.lab.append([None] * LABSIZE)
+
+    def get_room(self, coord: Coord) -> "Room":
+        """Returns the room at the given coordinates"""
+        return self.lab[coord.x][coord.y]
+
+    def set_room(self, coord: Coord, room: "Room") -> None:
+        """Returns the room at the given coordinates"""
+        self.lab[coord.x][coord.y] = room
+
+    def get_lab(self) -> list[list["Room"]]:
+        """Return the generated lab"""
+        return self.lab
+
+    def generate(self) -> None:
+        """Generates a maze without walls"""
+        for x in range(LABSIZE):
+            for y in range(LABSIZE):
+                coord = Coord(x, y)
+                self.set_room(coord, Room(coord))
+        self._generate_nowalls()
+
+    def _generate_nowalls(self) -> None:
+        """Helper method for the generate() method.
+        Makes sure all rooms are connected to all adjacent rooms 
+        in the labyrinth.
+        """
+        for x in range(LABSIZE):
+            for y in range(LABSIZE):
+                coord = Coord(x, y)
+                this = self.get_room(coord)
+                for direction in cardinal.values():
+                    neighbour = coord.add(direction)
+                    if valid_coords(neighbour):
+                        neighbour = self.get_room(neighbour)
+                        this.connect_dir(direction, neighbour)
+
+    def generate_random(self) -> None:
+        """Generates the maze by:
+        1. Filling in empty rooms in the empty maze
+        2. Chooses (somewhat) randomly which room is the startroom room where
+           Steve is placed
+        3. Places the boss room opposite to startroom
+        4. Makes the rooms connected like a maze structure (with walls)
+        5. (Unimplemented functionality) Takes in a difficulty level and sets
+           the game accordingly
+        
+        Requires the use of helper methods, namely:
+
+        _generate_place_steve_boss()
+        _generate_maze()
+        _generate_recursive_linking()
+        _generate_count_unconnected_rooms()
+        _generate_force_connect()
+        _generate_is_linkable_by_recursive()
+        _generate_link_rooms()
+        """
+        # self.difficulty_level = difficulty_level
+        # put in empty rooms
+        for x in range(LABSIZE):
+            for y in range(LABSIZE):
+                coord = Coord(x, y)
+                self.set_room(coord, Room(coord))
+        # choose location for steve and boss
+        self._generate_place_steve_boss()
+        # connecting all the rooms in a maze-like fashion
+        self._generate_maze(self.steve_pos)
+
+    def _generate_place_steve_boss(self) -> None:
+        """One of many helper methods of the generate() method.
+
+        Chooses a startroom somewhat randomly, places Steve there,
+        and places the boss in a room opposite of startroom
+
+        How startroom is chosen:
+        - The possible rooms to be picked are rooms nearer to the perimeter than the center.
+        - e.g. If the labyrinth is 10 by 10 rooms, the middle 6 by 6 rooms cannot
+          be chosen as startroom. the surrounding 64 rooms can be chosen as rooms.
+        - Of the 64 rooms nearing the far sides of the labyrinth, one room is chosen
+          at random.
+        - This means that LABSIZE cannot be too small, or the generation may break.
+          ie LABSIZE cannot be less than 4.
+
+        How bossroom is chosen:
+        - e.g. LABSIZE is set to 10 and startroom coords are [1, 7]
+        - bossroom is at the opposite of the labyrinth at [8, 2]
+
+        Startroom will be remembered throughout the game, the starting position
+        of the boss will not be remembered. 
+        """
+        # choose position of Start room randomly
+        n = LABSIZE // 4
+        n = random.randint(-n, n - 1) % LABSIZE
+        m = random.randint(0, LABSIZE - 1)
+        nm = [n, m]
+        random.shuffle(nm)
+        steve_coord = Coord(nm[0], nm[1])
+        self.get_room(steve_coord).settype_startroom()
+        self.steve_pos = steve_coord
+
+        # choose position of Monster room opposite to where steve is
+        boss_x = LABSIZE - 1 - (steve_coord.x % LABSIZE)
+        boss_y = LABSIZE - 1 - (steve_coord.y % LABSIZE)
+        boss_coord = Coord(boss_x, boss_y)
+        self.boss_pos = boss_coord
+        if boss_coord.is_same(
+                steve_coord):  # if they happen to be placed in the same room
+            raise ValueError(
+                "Steve and the Boss have been put at the same location.")
+        self.get_room(boss_coord).boss_enters()
+
+    def _generate_maze(self, startroom_pos: Coord) -> None:
+        """Links up all rooms in a maze-like fashion"""
+        # link up a "large" number of rooms
+        print("Loading: Generating maze...")
+        self._generate_recursive_linking(startroom_pos)
+        unconnected = self._generate_count_unconnected_rooms()
+        print("Loading: Tying loose ends...")
+        # linearly search through the grid to find unconnected rooms, and connects them.
+        # Stops when all are connected.
+        while unconnected != 0:
+            for x in range(LABSIZE):
+                for y in range(LABSIZE):
+                    coord = Coord(x, y)
+                    room = self.get_room(coord)
+                    if not room.is_connected_tostart():
+                        self._generate_force_connect(coord)
+            unconnected = self._generate_count_unconnected_rooms()
+
+    def _generate_force_connect(self, roomcoords: Coord) -> None:
+        """links holes in connectivity of maze to as many adjacent rooms as possible.
+        Game design: Does so in an unpredictable (random) sequence, so that this
+        has a lower chance of being exploitable by the player.
+        """
+        newdirlist = list(cardinal.values())
+        random.shuffle(newdirlist)
+        for i in range(4):
+            neighbourcoords = roomcoords.add(newdirlist[i])
+            if valid_coords(neighbourcoords):
+                self._generate_link_rooms(
+                    roomcoords, neighbourcoords)  # forcing a connection.
+
+    def _generate_is_linkable_by_recursive(self, roomcoords: Coord) -> bool:
+        """Rules for a this room with coordinates roomcoords to be linked to its
+        neighbour that is attempting to link to this:
+        
+        1. It must have valid coords, within the appropriate range from 0 to LABSIZE - 1
+        2. It must not already be connected to the start.
+        """
+        if not valid_coords(roomcoords):
+            return False
+        room_object = self.get_room(roomcoords)
+        if room_object.is_connected_tostart():  # has access
+            return False
+        return True
+
+    def _generate_recursive_linking(self, thisroomcoords: Coord) -> None:
+        """
+        Attempts to link a large number of rooms, recursively
+        Rules for whether a neighbour room is linkable:
+        0. The room exists (has coordinates within the valid range)
+        1. The room is not already linked.
+
+        thisroom will make an attempt to link to linkable neighbour rooms.
+        The success of the attempt is based on chance.
+        This chance can be changed, but is hardcoded.
+        This chance should be quite high above 25%; the lower the odds,
+        the more holes in connectivity, the more cleanup linking has to be done.
+        
+        """
+        # current room should already be connected
+        thisroom = self.get_room(thisroomcoords)  # object thisroom object
+        if not thisroom.is_connected_tostart():
+            raise ValueError(
+                "Room that is trying to (recursively) link to others is not yet connected, should not happen."
+            )
+        # iteration through N, S, E, W:
+        # checking whether they are linkable by rules
+        # if linkable, there is a chance of linking
+        for direction in cardinal.values():
+            neighbourcoords = thisroomcoords.add(direction)
+            if self._generate_is_linkable_by_recursive(neighbourcoords):
+                odds = random.randint(1, 100)
+                if odds <= 58:  # n% chance of linking;
+                    self._generate_link_rooms(thisroomcoords, neighbourcoords)
+                    self._generate_recursive_linking(
+                        neighbourcoords)  # recursion call
+        # base case should be inherently built into this loop:
+        # Recursion branch ends at a room where
+        # 1. All adjacent rooms are not linkable
+        # 2. By chance, the labyrinth chooses not to link this room to any other room.
+
+    def _generate_link_rooms(self, room1coords: Coord,
+                             room2coords: Coord) -> None:
+        # validation
+        if not valid_coords(room1coords) or not valid_coords(room2coords):
+            raise IndexError(
+                "_generate_link_rooms(): a room passed in has coords outside of labyrinth. Cannot be linked."
+            )
+        if room1coords.is_same(room2coords):
+            raise IndexError(
+                "_generate_link_rooms(): the same room is passed twice, cannot be linked."
+            )
+        if not room1coords.is_adjacent(room2coords):
+            raise IndexError(
+                "_generate_link_rooms(): non adjacent rooms are passed, cannot be linked."
+            )
+        # linking rooms
+        room1 = self.get_room(room1coords)
+        room2 = self.get_room(room2coords)
+        if room1.is_connected_tostart() or room2.is_connected_tostart():
+            room1.set_connected_True()
+            room2.set_connected_True()
+        if not room1.is_connected_tostart() and not room2.is_connected_tostart(
+        ):
+            # every linking must happen between rooms of which 1 MUST be connected.
+            return None  # no linking done if both are unconnected.
+        # print(room1.coords) #xyzxyz
+        # print(room2.coords) #xyzxyz
+        room1.set_access(room2)
+        room2.set_access(room1)
+
+    def _generate_count_unconnected_rooms(self) -> int:
+        """
+        One of many helper methods of the generate() method.
+        
+        Linearly search the rooms to check whether the rooms are connected to the
+        startroom.
+        Returns the number of rooms that are not connected.
+        
+        """
+        number_of_unconnected = 0
+        for column in self.lab:
+            for room in column:
+                # room is an instance of the Room class
+                if not room.is_connected_tostart():
+                    number_of_unconnected += 1  # counter
+        return number_of_unconnected
+
+ 
+class LabyrinthManager:
     """
     -- ATTRIBUTES --
     - lab: list[list[Room]]
     - difficulty_level
     - boss_pos: Coord
     - steve_pos: Coord
+    - posscoords: list[int]
 
-    -- METHODS
-    + generate(self) -> None
-    - generate_place_steve_boss() -> None:
-    - generate_cmaze(startroom_pos: list) -> None:
-    - generate_link_rooms(room1coords: list, room2coords: list) -> None:
-    - generate_rooms_connected() -> bool:
-    + move_boss(self) -> None:
-    + can_move_here(self, coords: list(int), direction):
-    + steve_useitem(self, item: Item) -> None
-    + monster_roar(self) -> None
-    
-    """
+    -- METHODS --
+    + get_room() -> Room
+    + set_room(Room) -> None
+    + layout() -> str
+    + get_current_pos() -> Coord
+    + move_boss(self) -> None
+    + move_steve(self) -> None
+   """
 
-    def __init__(self):
-        nonelist = [None] * LABSIZE
-        self.lab = []
-        for i in range(LABSIZE):
-            self.lab.append(nonelist.copy())
+    def __init__(self, labyrinth: list[list["Room"]]):
+        self.lab = labyrinth
         self.difficulty_level = None
         self.boss_pos = Coord(-1, -1)  # Decided upon generation
         self.steve_pos = Coord(-1, -1)  # Decided upon generation
@@ -146,218 +397,6 @@ class Labyrinth:
             outputstr += fulltopstr + "\n" + fullmidstr + "\n" + fullbottomstr + "\n"
         return outputstr
 
-    def generate(self) -> None:
-        """Generates a maze without walls"""
-        for x in range(LABSIZE):
-            for y in range(LABSIZE):
-                coord = Coord(x, y)
-                self.set_room(coord, Room(coord))
-        self._generate_place_steve_boss()
-        self._generate_nowalls()
-
-    def _generate_nowalls(self) -> None:
-        """Helper method for the generate() method. Makes sure all rooms are connected to all adjacent rooms in the labyrinth."""
-        for x in range(LABSIZE):
-            for y in range(LABSIZE):
-                coord = Coord(x, y)
-                this = self.get_room(coord)
-                for name, direction in cardinal.items():
-                    neighbour = coord.add(direction)
-                    if valid_coords(neighbour):
-                        neighbour = self.get_room(neighbour)
-                        this.connect_dir(name, neighbour)
-
-    def generate_random(self) -> None:
-        """Generates the maze by:
-        1. Filling in empty rooms in the empty maze
-        2. Chooses (somewhat) randomly which room is the startroom room where Steve is placed
-        3. Places the boss room opposite to startroom
-        4. Makes the rooms connected like a maze structure (with walls)
-        5. (Unimplemented functionality) Takes in a difficulty level and sets the game accordingly
-        
-        Requires the use of helper methods, namely:
-
-        _generate_place_steve_boss()
-        _generate_maze()
-        _generate_recursive_linking()
-        _generate_count_unconnected_rooms()
-        _generate_force_connect()
-        _generate_is_linkable_by_recursive()
-        _generate_link_rooms()
-        """
-        # self.difficulty_level = difficulty_level
-        # put in empty rooms
-        for x in range(LABSIZE):
-            for y in range(LABSIZE):
-                coord = Coord(x, y)
-                self.set_room(coord, Room(coord))
-        # choose location for steve and boss
-        self._generate_place_steve_boss()
-        # connecting all the rooms in a maze-like fashion
-        self._generate_maze(self.steve_pos)
-
-    def _generate_place_steve_boss(self) -> None:
-        """One of many helper methods of the generate() method.
-
-        Chooses a startroom somewhat randomly, places Steve there,
-        and places the boss in a room opposite of startroom
-
-        How startroom is chosen:
-        - The possible rooms to be picked are rooms nearer to the perimeter than the center.
-        - e.g. If the labyrinth is 10 by 10 rooms, the middle 6 by 6 rooms cannot be chosen as startroom. the surrounding 64 rooms can be chosen as rooms.
-        - Of the 64 rooms nearing the far sides of the labyrinth, one room is chosen at random.
-        - This means that LABSIZE cannot be too small, or the generation may break. ie LABSIZE cannot be less than 4.
-
-        How bossroom is chosen:
-        - e.g. LABSIZE is set to 10 and startroom coords are [1, 7]
-        - bossroom is at the opposite of the labyrinth at [8, 2]
-
-        Startroom will be remembered throughout the game, the starting position of the boss will not be remembered. 
-        """
-        # choose position of Start room randomly
-        n = LABSIZE // 4
-        n = random.randint(-n, n - 1) % LABSIZE
-        m = random.randint(0, LABSIZE - 1)
-        nm = [n, m]
-        random.shuffle(nm)
-        steve_coord = Coord(nm[0], nm[1])
-        self.get_room(steve_coord).settype_startroom()
-        self.steve_pos = steve_coord
-
-        # choose position of Monster room opposite to where steve is
-        boss_x = LABSIZE - 1 - (steve_coord.x % LABSIZE)
-        boss_y = LABSIZE - 1 - (steve_coord.y % LABSIZE)
-        boss_coord = Coord(boss_x, boss_y)
-        self.boss_pos = boss_coord
-        if boss_coord.is_same(steve_coord):  # if they happen to be placed in the same room
-            raise ValueError(
-                "Steve and the Boss have been put at the same location.")
-        self.get_room(boss_coord).boss_enters()
-
-    def _generate_maze(self, startroom_pos: Coord) -> None:
-        """Links up all rooms in a maze-like fashion"""
-        # link up a "large" number of rooms
-        print("Loading: Generating maze...")
-        self._generate_recursive_linking(startroom_pos)
-        unconnected = self._generate_count_unconnected_rooms()
-        print("Loading: Tying loose ends...")
-        # linearly search through the grid to find unconnected rooms, and connects them.
-        # Stops when all are connected.
-        while unconnected != 0:
-            for x in range(LABSIZE):
-                for y in range(LABSIZE):
-                    coord = Coord(x, y)
-                    room = self.get_room(coord)
-                    if not room.is_connected_tostart():
-                        self._generate_force_connect(coord)
-            unconnected = self._generate_count_unconnected_rooms()
-
-    def _generate_force_connect(self, roomcoords: Coord) -> None:
-        """links holes in connectivity of maze to as many adjacent rooms as possible.
-        Game design: Does so in an unpredictable (random) sequence, so that this has a lower chance of being exploitable by the player."""
-        newdirlist = list(cardinal.values())
-        random.shuffle(newdirlist)
-        for i in range(4):
-            neighbourcoords = roomcoords.add(newdirlist[i])
-            if valid_coords(neighbourcoords):
-                self._generate_link_rooms(
-                    roomcoords, neighbourcoords)  # forcing a connection.
-
-    def _generate_is_linkable_by_recursive(self,
-                                           roomcoords: Coord) -> bool:
-        """Rules for a this room with coordinates roomcoords to be linked to its neighbour that is attempting to link to this:
-        
-        1. It must have valid coords, within the appropriate range from 0 to LABSIZE - 1
-        2. It must not already be connected to the start.
-        """
-        if not valid_coords(roomcoords):
-            return False
-        room_object = self.get_room(roomcoords)
-        if room_object.is_connected_tostart():  # has access
-            return False
-        return True
-
-    def _generate_recursive_linking(self, thisroomcoords: Coord) -> None:
-        """
-        Attempts to link a large number of rooms, recursively
-        Rules for whether a neighbour room is linkable:
-        0. The room exists (has coordinates within the valid range)
-        1. The room is not already linked.
-
-        thisroom will make an attempt to link to linkable neighbour rooms.
-        The success of the attempt is based on chance.
-        This chance can be changed, but is hardcoded.
-        This chance should be quite high above 25%; the lower the odds, the more holes in connectivity, the more cleanup linking has to be done.
-        
-        """
-        # current room should already be connected
-        thisroom = self.get_room(thisroomcoords)  # object thisroom object
-        if not thisroom.is_connected_tostart():
-            raise ValueError(
-                "Room that is trying to (recursively) link to others is not yet connected, should not happen."
-            )
-        # iteration through N, S, E, W:
-        # checking whether they are linkable by rules
-        # if linkable, there is a chance of linking
-        for direction in cardinal.values():
-            neighbourcoords = thisroomcoords.add(direction)
-            if self._generate_is_linkable_by_recursive(neighbourcoords):
-                odds = random.randint(1, 100)
-                if odds <= 58:  # n% chance of linking;
-                    self._generate_link_rooms(thisroomcoords, neighbourcoords)
-                    self._generate_recursive_linking(
-                        neighbourcoords)  # recursion call
-        # base case should be inherently built into this loop:
-        # Recursion branch ends at a room where
-        # 1. All adjacent rooms are not linkable
-        # 2. By chance, the labyrinth chooses not to link this room to any other room.
-
-    def _generate_link_rooms(self, room1coords: Coord,
-                             room2coords: Coord) -> None:
-        # validation
-        if not valid_coords(room1coords) or not valid_coords(room2coords):
-            raise IndexError(
-                "_generate_link_rooms(): a room passed in has coords outside of labyrinth. Cannot be linked."
-            )
-        if room1coords.is_same(room2coords):
-            raise IndexError(
-                "_generate_link_rooms(): the same room is passed twice, cannot be linked."
-            )
-        if not room1coords.is_adjacent(room2coords):
-           raise IndexError(
-                "_generate_link_rooms(): non adjacent rooms are passed, cannot be linked."
-            )
-        # linking rooms
-        room1 = self.get_room(room1coords)
-        room2 = self.get_room(room2coords)
-        if room1.is_connected_tostart() or room2.is_connected_tostart():
-            room1.set_connected_True()
-            room2.set_connected_True()
-        if not room1.is_connected_tostart() and not room2.is_connected_tostart(
-        ):
-            # every linking must happen between rooms of which 1 MUST be connected.
-            return None  # no linking done if both are unconnected.
-        # print(room1.coords) #xyzxyz
-        # print(room2.coords) #xyzxyz
-        room1.set_access(room2)
-        room2.set_access(room1)
-
-    def _generate_count_unconnected_rooms(self) -> int:
-        """
-        One of many helper methods of the generate() method.
-        
-        Linearly search the rooms to check whether the rooms are connected to the startroom.
-        Returns the number of rooms that are not connected.
-        
-        """
-        number_of_unconnected = 0
-        for column in self.lab:
-            for room in column:
-                # room is an instance of the Room class
-                if not room.is_connected_tostart():
-                    number_of_unconnected += 1  # counter
-        return number_of_unconnected
-
     def get_current_pos(self) -> Coord:
         """Tells the coordinates of Steve's current location."""
         return self.steve_pos
@@ -371,7 +410,7 @@ class Labyrinth:
         directions = list(cardinal.values())
         random.shuffle(directions)
         for direction in directions:
-            if self.can_move_here(self.boss_pos, direction):
+            if self._can_move_here(self.boss_pos, direction):
                 self.get_room(self.boss_pos).boss_leaves()
                 self.boss_pos = self.boss_pos.add(direction)
                 self.get_room(self.boss_pos).boss_enters()
@@ -381,7 +420,7 @@ class Labyrinth:
         )
 
     def move_steve(self, direction: Coord) -> None:
-        if not self.can_move_here(self.steve_pos, direction):
+        if not self._can_move_here(self.steve_pos, direction):
             raise ValueError(
                 "move_steve() attempted to move steve to a direction that is not possible."
             )
@@ -389,7 +428,7 @@ class Labyrinth:
         self.steve_pos = self.steve_pos.add(direction)
         self.get_room(self.steve_pos).steve_enters()
 
-    def can_move_here(self, this_coords: Coord, direction) -> bool:
+    def _can_move_here(self, this_coords: Coord, direction: Coord) -> bool:
         """Tells whether an adjacent room is accessible.
         Rules:
         1. There is no wall between this room and the neighbour.
@@ -397,22 +436,24 @@ class Labyrinth:
         """
         if not valid_coords(this_coords):  # this should not happen at all
             raise IndexError("entity is not inside of maze")
-        thisroom = self.get_room(self.this_coords)
+        thisroom = self.get_room(this_coords)
         return thisroom.dir_is_accessible(direction)
 
     def _steve_useitem(self, item) -> None:
         """Uses a utility item. Not implemented because no utility items are implemented yet."""
         raise NotImplementedError
 
-    def give_sound_clue(self):
-        """Displays a message giving a hint how far away the boss is from steve and which direction steve might have to go in order to find the boss.
+    def _give_sound_clue(self):
+        """Displays a message giving a hint how far away the boss is from steve
+        and which direction steve might have to go in order to find the boss.
         
         Calculates straight line distance.
         Calculates which direction, N, S, E, W, NE, NW, SE, SW
         displays a message based on distance and direction.
         """
-        displacement = self.sb_xy_distance()
-        if displacement.is_zero():  # They are in the same room, a clue doesn't need to be given LOL
+        displacement = self._sb_xy_distance()
+        if displacement.is_zero(
+        ):  # They are in the same room, a clue doesn't need to be given LOL
             return None
         i = random.randint(0, 100)
         if i <= 20:
@@ -428,7 +469,7 @@ class Labyrinth:
                     "A silent whine was heard in the distance. It might just be any creature out there."
                 )
             return None
-        r, dirstr = self.r_dir_calc(displacement)
+        r, dirstr = self._r_dir_calc(displacement)
         if r < 3:
             i = random.randint(0, 2)
             if i == 0:
@@ -455,12 +496,12 @@ class Labyrinth:
             print("Hardly audible footsteps were heard.")
         print(f"The sound seemed to come from {dirstr}.")
 
-    def r_dir_calc(self, coord: Coord) -> tuple[float, str]:
-        """maths work for give_sound_clue
+    def _r_dir_calc(self, coord: Coord) -> tuple[float, str]:
+        """maths work for _give_sound_clue
         Finds r and theta using x and y (polar coordinates system)
         returns r and direction
         """
-        displacement = self.sb_xy_distance()
+        displacement = self._sb_xy_distance()
         if displacement.is_zero():
             return None
         r = math.sqrt((coord.x**2) + (coord.y**2))  # Pythagorean theorem
@@ -502,10 +543,10 @@ class Labyrinth:
             upperbound += PI / 4
         if dirstr is None:
             raise RuntimeError(
-                "Person who implemented r_dir_calc() has a skill issue")
+                "Person who implemented _r_dir_calc() has a skill issue")
         return r, dirstr
 
-    def sb_xy_distance(self) -> Coord:
+    def _sb_xy_distance(self) -> Coord:
         """returns x, y displacement of boss from steve."""
         return self.steve_pos.direction_of(self.boss_pos)
 
