@@ -48,7 +48,7 @@ cardinal = {
 }
 
 
-def is_adjacent(room1: list[int], room2: list[int]) -> bool:
+def is_adjacent(room1: Coord, room2: Coord) -> bool:
 
     xdiff = room1[0] - room2[0]
     ydiff = room1[1] - room2[1]
@@ -59,8 +59,8 @@ def is_adjacent(room1: list[int], room2: list[int]) -> bool:
 
 
 def direction_of(
-        targetcoords: list[int],
-        neighbourcoords: list[int]) -> "NORTH or SOUTH or EAST or WEST":
+        targetcoords: Coord,
+        neighbourcoords: Coord) -> "NORTH or SOUTH or EAST or WEST":
     if not is_adjacent(targetcoords, neighbourcoords):
         return None
     xdiff = neighbourcoords[0] - targetcoords[0]
@@ -80,7 +80,7 @@ def direction_of(
 labsize = 10  # cannot be too small!!
 
 
-def valid_coords(roomcoords: list[int]) -> bool:
+def valid_coords(roomcoords: Coord) -> bool:
     if type(roomcoords) is not list:
         print(
             f"valid_coords() says that roomcoords {roomcoords} is not a list.")
@@ -109,8 +109,8 @@ class Labyrinth:
     -- ATTRIBUTES --
     - lab: list[list[Room]]
     - difficulty_level
-    - boss_pos: list[int]
-    - steve_pos: list[int]
+    - boss_pos: Coord
+    - steve_pos: Coord
 
     -- METHODS
     + generate(self) -> None
@@ -178,7 +178,7 @@ class Labyrinth:
         """Generates a maze without walls"""
         for x in range(labsize):
             for y in range(labsize):
-                self.lab[x][y] = Room(x, y)
+                self.lab[x][y] = Room(Coord(x, y))
         self._generate_place_steve_boss()
         self._generate_nowalls()
 
@@ -250,12 +250,12 @@ class Labyrinth:
         random.shuffle(nm)
         steve_x, steve_y = nm
         self.lab[steve_x][steve_y].settype_startroom()
-        self.steve_pos = [steve_x, steve_y]
+        self.steve_pos = Coord(steve_x, steve_y)
 
         # choose position of Monster room opposite to where steve is
         boss_x = labsize - 1 - (steve_x % labsize)
         boss_y = labsize - 1 - (steve_y % labsize)
-        self.boss_pos = [boss_x, boss_y]
+        self.boss_pos = Coord(boss_x, boss_y)
         if (boss_x, boss_y) == (
                 steve_x,
                 steve_y):  # if they happen to be placed in the same room
@@ -263,7 +263,7 @@ class Labyrinth:
                 "Steve and the Boss have been put at the same location.")
         self.lab[boss_x][boss_y].boss_enters()
 
-    def _generate_maze(self, startroom_pos: list[int]) -> None:
+    def _generate_maze(self, startroom_pos: Coord) -> None:
         """Links up all rooms in a maze-like fashion"""
         # link up a "large" number of rooms
         print("Loading: Generating maze...")
@@ -280,7 +280,7 @@ class Labyrinth:
                         self._generate_force_connect([x, y])
             unconnected = self._generate_count_unconnected_rooms()
 
-    def _generate_force_connect(self, roomcoords: list[int]) -> None:
+    def _generate_force_connect(self, roomcoords: Coord) -> None:
         """links holes in connectivity of maze to as many adjacent rooms as possible.
         Game design: Does so in an unpredictable (random) sequence, so that this has a lower chance of being exploitable by the player."""
         newdirlist = DIRLIST.copy()
@@ -295,7 +295,7 @@ class Labyrinth:
                     roomcoords, neighbourcoords)  # forcing a connection.
 
     def _generate_is_linkable_by_recursive(self,
-                                           roomcoords: list[int]) -> bool:
+                                           roomcoords: Coord) -> bool:
         """Rules for a this room with coordinates roomcoords to be linked to its neighbour that is attempting to link to this:
         
         1. It must have valid coords, within the appropriate range from 0 to labsize - 1
@@ -309,7 +309,7 @@ class Labyrinth:
             return False
         return True
 
-    def _generate_recursive_linking(self, thisroomcoords: list[int]) -> None:
+    def _generate_recursive_linking(self, thisroomcoords: Coord) -> None:
         """
         Attempts to link a large number of rooms, recursively
         Rules for whether a neighbour room is linkable:
@@ -323,8 +323,7 @@ class Labyrinth:
         
         """
         # current room should already be connected
-        x, y = thisroomcoords
-        thisroom = self.lab[x][y]  # object thisroom object
+        thisroom = self.lab[thisroomcoords.x, thisroomcoords.y]  # object thisroom object
         if not thisroom.is_connected_tostart():
             raise ValueError(
                 "Room that is trying to (recursively) link to others is not yet connected, should not happen."
@@ -332,8 +331,8 @@ class Labyrinth:
         # iteration through N, S, E, W:
         # checking whether they are linkable by rules
         # if linkable, there is a chance of linking
-        for i in range(4):
-            neighbourcoords = [x + DIRLIST[i][0], y + DIRLIST[i][1]]
+        for direction in cardinal.values():
+            neighbourcoords = Coord(thisroomcoords.x + direction.x, thisroomcoords.y + direction.y)
             if self._generate_is_linkable_by_recursive(neighbourcoords):
                 odds = random.randint(1, 100)
                 if odds <= 58:  # n% chance of linking;
@@ -345,26 +344,24 @@ class Labyrinth:
         # 1. All adjacent rooms are not linkable
         # 2. By chance, the labyrinth chooses not to link this room to any other room.
 
-    def _generate_link_rooms(self, room1coords: list[int],
-                             room2coords: list[int]) -> None:
+    def _generate_link_rooms(self, room1coords: Coord,
+                             room2coords: Coord) -> None:
         # validation
-        x1, y1 = room1coords
-        x2, y2 = room2coords
         if not valid_coords(room1coords) or not valid_coords(room2coords):
             raise IndexError(
                 "_generate_link_rooms(): a room passed in has coords outside of labyrinth. Cannot be linked."
             )
-        if x1 == x2 and y1 == y2:
+        if room1coords.x == room1coords.x and room1coords.y == room1coords.y:
             raise IndexError(
                 "_generate_link_rooms(): the same room is passed twice, cannot be linked."
             )
-        if not is_adjacent(room1coords, room2coords):
-            raise IndexError(
+        if not room1coords.is_adjacent(room2coords):
+           raise IndexError(
                 "_generate_link_rooms(): non adjacent rooms are passed, cannot be linked."
             )
         # linking rooms
-        room1 = self.lab[x1][y1]
-        room2 = self.lab[x2][y2]
+        room1 = self.lab[room1coords.x][room1coords.y]
+        room2 = self.lab[room2coords.x][room2coords.y]
         if room1.is_connected_tostart() or room2.is_connected_tostart():
             room1.set_connected_True()
             room2.set_connected_True()
@@ -393,7 +390,7 @@ class Labyrinth:
                     number_of_unconnected += 1  # counter
         return number_of_unconnected
 
-    def get_current_pos(self) -> list[int]:
+    def get_current_pos(self) -> Coord:
         """Tells the coordinates of Steve's current location."""
         return self.steve_pos
 
@@ -403,38 +400,28 @@ class Labyrinth:
         Does not jump over walls.
         If the boss cannot move in any of the 4 cardinal directions, an error is raised as it implies that the room it is in is completely isolated, which should not happen.
         """
-        dirlist = [NORTH, SOUTH, EAST, WEST]
-        random.shuffle(dirlist)
-        for randomdir in dirlist:
-            if self.can_move_here(self.boss_pos, randomdir):
-                x, y = self.boss_pos
-                self.lab[x][y].boss_leaves()
-                for i in range(4):
-                    if randomdir == [NORTH, SOUTH, EAST, WEST][i]:
-                        randomdir = DIRLIST[i]
-                self.boss_pos = [x + randomdir[0], y + randomdir[1]]
-                x, y = self.boss_pos
-                self.lab[x][y].boss_enters()
+        directions = list(cardinal.values())
+        random.shuffle(directions)
+        for direction in directions:
+            if self.can_move_here(self.boss_pos, direction):
+                self.lab[self.boss_pos.x][self.boss_pos.y].boss_leaves()
+                self.boss_pos = Coord(self.boss_pos.x + direction.x, self.boss_pos.y + direction.y)
+                self.lab[self.boss_pos.x][self.boss_pos.y].boss_enters()
                 return None
         raise RuntimeError(
             f"Boss cannot move because its room {self.boss_pos} is unlinked to neighbours."
         )
 
-    def move_steve(self, direction) -> None:
+    def move_steve(self, direction: Coord) -> None:
         if not self.can_move_here(self.steve_pos, direction):
             raise ValueError(
                 "move_steve() attempted to move steve to a direction that is not possible."
             )
-        for i in range(4):
-            if direction == [NORTH, SOUTH, EAST, WEST][i]:
-                direction = DIRLIST[i]
-        x, y = self.steve_pos
-        self.lab[x][y].steve_leaves()
-        self.steve_pos = [x + direction[0], y + direction[1]]
-        x, y = self.steve_pos
-        self.lab[x][y].steve_enters()
+        self.lab[self.steve_pos.x][self.steve_pos.y].steve_leaves()
+        self.steve_pos = Coord(self.steve_pos.x + direction.x, self.steve_pos.y + direction.y)
+        self.lab[self.steve_pos.x][self.steve_pos.y].steve_enters()
 
-    def can_move_here(self, this_coords: list[int], direction) -> bool:
+    def can_move_here(self, this_coords: Coord, direction) -> bool:
         """Tells whether an adjacent room is accessible.
         Rules:
         1. There is no wall between this room and the neighbour.
@@ -442,7 +429,7 @@ class Labyrinth:
         """
         if not valid_coords(this_coords):  # this should not happen at all
             raise IndexError("entity is not inside of maze")
-        thisroom = self.lab[this_coords[0]][this_coords[1]]
+        thisroom = self.lab[this_coords.x][this_coords.y]
         return thisroom.dir_is_accessible(direction)
 
     def _steve_useitem(self, item) -> None:
@@ -456,8 +443,8 @@ class Labyrinth:
         Calculates which direction, N, S, E, W, NE, NW, SE, SW
         displays a message based on distance and direction.
         """
-        dx, dy = self.sb_xy_distance()
-        if dx == 0 and dy == 0:  # They are in the same room, a clue doesn't need to be given LOL
+        displacement = self.sb_xy_distance()
+        if displacement.x == 0 and displacement.y == 0:  # They are in the same room, a clue doesn't need to be given LOL
             return None
         i = random.randint(0, 100)
         if i <= 20:
@@ -473,7 +460,7 @@ class Labyrinth:
                     "A silent whine was heard in the distance. It might just be any creature out there."
                 )
             return None
-        r, dirstr = self.r_dir_calc(dx, dy)
+        r, dirstr = self.r_dir_calc(displacement.x, displacement.y)
         if r < 3:
             i = random.randint(0, 2)
             if i == 0:
@@ -505,8 +492,8 @@ class Labyrinth:
         Finds r and theta using x and y (polar coordinates system)
         returns r and direction
         """
-        dx, dy = self.sb_xy_distance()
-        if dx == 0 and dy == 0:
+        displacement = self.sb_xy_distance()
+        if displacement.x == 0 and displacement.y == 0:
             return None
         r = math.sqrt((dx**2) + (dy**2))  # Pythagorean theorem
         basic = abs(math.atan(dy / dx))
@@ -550,11 +537,9 @@ class Labyrinth:
                 "Person who implemented r_dir_calc() has a skill issue")
         return r, dirstr
 
-    def sb_xy_distance(self) -> list[int]:
+    def sb_xy_distance(self) -> Coord:
         """returns x, y displacement of boss from steve."""
-        xdiff = self.boss_pos[0] - self.steve_pos[0]
-        ydiff = self.boss_pos[1] - self.steve_pos[1]
-        return [xdiff, ydiff]
+        return self.steve_pos.direction_of(self.boss_pos)
 
 
 SOMEROOM = "SOMEROOM"
@@ -563,7 +548,7 @@ SOMEROOM = "SOMEROOM"
 class Room:
     """
     -- ATTRIBUTES --
-    + coords: list[int]
+    + coords: Coord
     + type: dict
     + connected: bool
     + mynorth: dict
@@ -582,8 +567,8 @@ class Room:
     
     """
 
-    def __init__(self, x: int, y: int):
-        self.coords = [x, y]
+    def __init__(self, coord: Coord):
+        self.coord = coord
         self.cleared = False
         self.type = {"startroom?": False, "steve?": False, "boss?": False}
         self.connected = False
@@ -594,25 +579,25 @@ class Room:
         self.mysouth = None
         self.myeast = None
         self.mywest = None
-        if y + 1 >= labsize:
+        if coord.y + 1 >= labsize:
             self.mynorth = None
         else:
             self.mynorth = SOMEROOM
-        if y <= 0:
+        if coord.y <= 0:
             self.mysouth = None
         else:
             self.mysouth = SOMEROOM
-        if x + 1 >= labsize:
+        if coord.x + 1 >= labsize:
             self.myeast = None
         else:
             self.myeast = SOMEROOM
-        if x <= 0:
+        if coord.x <= 0:
             self.mywest = None
         else:
             self.mywest = SOMEROOM
 
-    def get_coords(self) -> list[int]:
-        return self.coords
+    def get_coord(self) -> Coord:
+        return self.coord
 
     def settype_startroom(self) -> None:
         self.type["startroom?"] = True
@@ -623,7 +608,7 @@ class Room:
         if not self.steve_ishere(
         ):  # Steve was not even here in this room in the first place
             raise RuntimeError(
-                f"Steve is not in room {self.coords}, yet steve_leaves() is called.\nPossible desync between Labyrinth object's steve_pos attribute and this room object's type attribute values."
+                f"Steve is not in room {self.coord}, yet steve_leaves() is called.\nPossible desync between Labyrinth object's steve_pos attribute and this room object's type attribute values."
             )
         self.type["steve?"] = False
         self.cleared = True
@@ -631,7 +616,7 @@ class Room:
     def steve_enters(self) -> None:
         if self.steve_ishere():
             raise RuntimeError(
-                f"Steve is already in room {self.coords}, yet steve_enters() is called.\nPossible desync between Labyrinth object's steve_pos attribute and this room object's type attribute values."
+                f"Steve is already in room {self.coord}, yet steve_enters() is called.\nPossible desync between Labyrinth object's steve_pos attribute and this room object's type attribute values."
             )
         self.type["steve?"] = True
         if not self.cleared and not self.type["boss?"]:
@@ -649,24 +634,24 @@ class Room:
     def boss_leaves(self) -> None:
         if not self.boss_ishere():
             raise RuntimeError(
-                f"Boss is not in room {self.coords}, yet boss_leaves() is called.\nPossible desync between Labyrinth object's boss_pos attribute and this room object's type attribute values."
+                f"Boss is not in room {self.coord}, yet boss_leaves() is called.\nPossible desync between Labyrinth object's boss_pos attribute and this room object's type attribute values."
             )
         self.type["boss?"] = False
 
     def boss_enters(self) -> None:
         if self.boss_ishere():
             raise RuntimeError(
-                f"Boss is already in room {self.coords}, yet boss_enters() is called.\nPossible desync between Labyrinth object's boss_pos attribute and this room object's type attribute values."
+                f"Boss is already in room {self.coord}, yet boss_enters() is called.\nPossible desync between Labyrinth object's boss_pos attribute and this room object's type attribute values."
             )
         self.type["boss?"] = True
 
     def connect_dir(self, direction, neighbour: "Room") -> None:
         if not isinstance(neighbour, Room):
-            print(self.coords, neighbour.coords)
+            print(self.coord, neighbour.coords)
             raise ValueError(
                 f"neighbour variable {neighbour} passed is not a room")
-        if not is_adjacent(self.coords, neighbour.coords):
-            print(self.coords, neighbour.coords)
+        if not self.coord.is_adjacent(neighbour.coord):
+            print(self.coord, neighbour.coord)
             raise RuntimeError(
                 "neighbour variable passed is not an adjacent room")
 
@@ -711,48 +696,38 @@ class Room:
         self.item = item
 
     def set_access(self, room: "Room") -> None:
-        targetx, targety = room.get_coords()
-        myx, myy = self.coords
-        xdiff = targetx - myx
-        ydiff = targety - myy
-        i = 0
-        directionnum = -1
-        while i < 4:
-            if DIRLIST[i] == [xdiff, ydiff]:
-                directionnum = i
-            i += 1
-        if directionnum == -1:
+        diff = self.coord.direction_of(room.get_coord())
+        if self.coord.is_adjacent(room.get_coord()):
             raise ValueError(
-                f"set_access(), room {[targetx, targety]} is not adjacent to this room {self.coords}"
+                f"set_access(), room {room.get_coord()} is not adjacent to this room {self.coord}"
             )
-        direction = [NORTH, SOUTH, EAST, WEST][directionnum]
-        if direction == NORTH:
+        if diff == cardinal["NORTH"]:
             if self.mynorth is None:
                 raise ValueError(
-                    f'Room {self.coords} has no room to the north of it, access cannot be set.'
+                    f'Room {self.coord} has no room to the north of it, access cannot be set.'
                 )
             self.mynorth = room
-        elif direction == SOUTH:
+        elif diff == cardinal["SOUTH"]:
             if self.mysouth is None:
                 raise ValueError(
-                    f'Room {self.coords} has no room to the south of it, access cannot be set.'
+                    f'Room {self.coord} has no room to the south of it, access cannot be set.'
                 )
             self.mysouth = room
-        elif direction == EAST:
+        elif diff == cardinal["EAST"]:
             if self.myeast is None:
                 raise ValueError(
-                    f'Room {self.coords} has no room to the east of it, access cannot be set.'
+                    f'Room {self.coord} has no room to the east of it, access cannot be set.'
                 )
             self.myeast = room
-        elif direction == WEST:
+        elif diff == cardinal["WEST"]:
             if self.mywest is None:
                 raise ValueError(
-                    f'Room {self.coords} has no room to the west of it, access cannot be set.'
+                    f'Room {self.coord} has no room to the west of it, access cannot be set.'
                 )
             self.mywest = room
         else:
             raise ValueError(
-                f'Room {self.coords} set_access() had argument passed that is not a direction value.'
+                f'Room {self.coord} set_access() had argument passed that is not a direction value.'
             )
 
     def is_connected_tostart(self) -> bool:
@@ -765,24 +740,24 @@ class Room:
 
     def get_neighbours_accessibility(self) -> list[bool]:
         outputlist = []
-        for direction in [NORTH, SOUTH, EAST, WEST]:
+        for direction in cardinal.values():
             outputlist.append(self.dir_is_accessible(direction))
         return outputlist  # e.g. [False, True, True, False] according to N, S, E, W
 
-    def dir_is_accessible(self, direction) -> bool:
-        if direction == NORTH:
+    def dir_is_accessible(self, direction: Coord) -> bool:
+        if direction == cardinal["NORTH"]:
             if not isinstance(self.mynorth, Room):
                 return False
             return True
-        if direction == SOUTH:
+        if direction == cardinal["SOUTH"]:
             if not isinstance(self.mysouth, Room):
                 return False
             return True
-        if direction == EAST:
+        if direction == cardinal["EAST"]:
             if not isinstance(self.myeast, Room):
                 return False
             return True
-        if direction == WEST:
+        if direction == cardinal["WEST"]:
             if not isinstance(self.mywest, Room):
                 return False
             return True
