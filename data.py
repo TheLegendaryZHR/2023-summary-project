@@ -121,7 +121,6 @@ class LabyrinthGenerator:
                     if valid_coords(neighbour):
                         neighbour = self.get_room(neighbour)
                         this.connect_dir(direction, neighbour)
-        self._generate_place_steve_boss()
  
     def generate_random(self) -> None:
         """Generates the maze by:
@@ -348,8 +347,8 @@ class LabyrinthManager:
     def __init__(self, labyrinth: list[list["Room"]]):
         self.lab = labyrinth
         self.difficulty_level = None
-        self.boss_pos = Coord(-1, -1)  # Decided upon generation
-        self.steve_pos = Coord(-1, -1)  # Decided upon generation
+        self.boss_pos = Coord(9, 9)  # Decided upon generation
+        self.steve_pos = Coord(0, 0)  # Decided upon generation
         self.posscoords = list(range(LABSIZE))
 
     def get_room(self, coord: Coord) -> "Room":
@@ -772,6 +771,7 @@ class Room:
             if not isinstance(self.mywest, Room):
                 return False
             return True
+        breakpoint()
         raise ValueError(
             "argument passed into dir_is_accessible() should be a direction value."
         )

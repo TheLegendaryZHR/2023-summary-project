@@ -196,12 +196,11 @@ class MUDGame:
         Move Steve to another room when no item or creatures left in the current room.
         """
         current_location = self.maze.get_current_pos()
-        opt_dir = {'1': NORTH, '2': SOUTH, '3': EAST, '4': WEST}
         available_dir = []
         dir_provided = ''
-        for dir in opt_dir.values():
-            if self.maze.can_move_here(current_location, dir):
-                available_dir.append(dir)
+        for dir_name, dir_coord in data.cardinal.items():
+            if self.maze.can_move_here(current_location, dir_coord):
+                available_dir.append(dir_name)
         for i in range(len(available_dir)):
             dir_provided = dir_provided + str(
                 i + 1) + '. ' + available_dir[i] + ' '
@@ -269,18 +268,12 @@ class MUDGame:
                     odds = random.randint(1, 100)
                     if odds <= 40:
                         current_location = self.maze.get_current_pos()
-                        opt_dir = {
-                            '1': NORTH,
-                            '2': SOUTH,
-                            '3': EAST,
-                            '4': WEST
-                        }
                         available_dir = []
-                        for dir in opt_dir.values():
-                            if self.maze.can_move_here(current_location, dir):
-                                available_dir.append(dir)
-                                random_dir = random.choice(available_dir)
-                        self.maze.move_steve(random_dir)
+                        for dir_name, dir_coord in data.cardinal.items():
+                            if self.maze.can_move_here(current_location, dir_coord):
+                                available_dir.append(dir_name)
+                        random_dir = random.choice(available_dir)
+                        self.maze.move_steve(data.cardinal[random_dir])
                         print('You have successfully ran away!')
                         continue
                     else:
