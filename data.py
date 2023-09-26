@@ -28,6 +28,10 @@ class Coord:
         self.x = x
         self.y = y
 
+    def add(self, coord: "Coord") -> "Coord":
+        """Returns a Coord that is the sum of self and coord"""
+        return Coord(self.x + coord.x, self.y + coord.y)
+
     def is_adjacent(self, coord: "Coord") -> bool:
         """Checks if coord is directly N, S, E, or W of self.
         Returns True if yes, otherwise False.
@@ -38,7 +42,13 @@ class Coord:
             return True
         return False
 
-   def direction_of(self, neighbour: "Coord") -> "Coord":
+    def is_same(self, coord: "Coord") -> bool:
+        return (self.x == coord.x) and (self.y == coord.y)
+
+    def is_zero(self) -> bool:
+        return self.x == 0 and self.y == 0
+
+    def direction_of(self, neighbour: "Coord") -> "Coord":
         return Coord(neighbour.x - self.x, neighbour.y - self.y)
 
 
@@ -273,10 +283,7 @@ class Labyrinth:
         newdirlist = list(cardinal.values())
         random.shuffle(newdirlist)
         for i in range(4):
-            neighbourcoords = [
-                Coord(roomcoords.x + newdirlist[i].x),
-                Coord(roomcoords.y + newdirlist[i].y)
-            ]
+            neighbourcoords = roomcoords.add(newdirlist[i])
             if valid_coords(neighbourcoords):
                 self._generate_link_rooms(
                     roomcoords, neighbourcoords)  # forcing a connection.
@@ -309,7 +316,7 @@ class Labyrinth:
         
         """
         # current room should already be connected
-        thisroom = self.lab[thisroomcoords.x, thisroomcoords.y]  # object thisroom object
+        thisroom = self.lab[thisroomcoords.x][thisroomcoords.y]  # object thisroom object
         if not thisroom.is_connected_tostart():
             raise ValueError(
                 "Room that is trying to (recursively) link to others is not yet connected, should not happen."
@@ -318,7 +325,7 @@ class Labyrinth:
         # checking whether they are linkable by rules
         # if linkable, there is a chance of linking
         for direction in cardinal.values():
-            neighbourcoords = Coord(thisroomcoords.x + direction.x, thisroomcoords.y + direction.y)
+            neighbourcoords = thisroomcoords.add(direction)
             if self._generate_is_linkable_by_recursive(neighbourcoords):
                 odds = random.randint(1, 100)
                 if odds <= 58:  # n% chance of linking;
@@ -337,7 +344,7 @@ class Labyrinth:
             raise IndexError(
                 "_generate_link_rooms(): a room passed in has coords outside of labyrinth. Cannot be linked."
             )
-        if room1coords.x == room1coords.x and room1coords.y == room1coords.y:
+        if room1coords.is_same(room2coords):
             raise IndexError(
                 "_generate_link_rooms(): the same room is passed twice, cannot be linked."
             )
@@ -391,7 +398,7 @@ class Labyrinth:
         for direction in directions:
             if self.can_move_here(self.boss_pos, direction):
                 self.lab[self.boss_pos.x][self.boss_pos.y].boss_leaves()
-                self.boss_pos = Coord(self.boss_pos.x + direction.x, self.boss_pos.y + direction.y)
+                self.boss_pos = self.boss_pos.add(direction)
                 self.lab[self.boss_pos.x][self.boss_pos.y].boss_enters()
                 return None
         raise RuntimeError(
@@ -404,7 +411,7 @@ class Labyrinth:
                 "move_steve() attempted to move steve to a direction that is not possible."
             )
         self.lab[self.steve_pos.x][self.steve_pos.y].steve_leaves()
-        self.steve_pos = Coord(self.steve_pos.x + direction.x, self.steve_pos.y + direction.y)
+        self.steve_pos = self.steve_pos.add(direction)
         self.lab[self.steve_pos.x][self.steve_pos.y].steve_enters()
 
     def can_move_here(self, this_coords: Coord, direction) -> bool:
@@ -430,7 +437,7 @@ class Labyrinth:
         displays a message based on distance and direction.
         """
         displacement = self.sb_xy_distance()
-        if displacement.x == 0 and displacement.y == 0:  # They are in the same room, a clue doesn't need to be given LOL
+        if displacement.is_zero():  # They are in the same room, a clue doesn't need to be given LOL
             return None
         i = random.randint(0, 100)
         if i <= 20:
@@ -446,7 +453,7 @@ class Labyrinth:
                     "A silent whine was heard in the distance. It might just be any creature out there."
                 )
             return None
-        r, dirstr = self.r_dir_calc(displacement.x, displacement.y)
+        r, dirstr = self.r_dir_calc(displacement)
         if r < 3:
             i = random.randint(0, 2)
             if i == 0:
@@ -473,34 +480,34 @@ class Labyrinth:
             print("Hardly audible footsteps were heard.")
         print(f"The sound seemed to come from {dirstr}.")
 
-    def r_dir_calc(self, dx, dy) -> tuple[float, str]:
+    def r_dir_calc(self, coord: Coord) -> tuple[float, str]:
         """maths work for give_sound_clue
         Finds r and theta using x and y (polar coordinates system)
         returns r and direction
         """
         displacement = self.sb_xy_distance()
-        if displacement.x == 0 and displacement.y == 0:
+        if displacement.is_zero():
             return None
-        r = math.sqrt((dx**2) + (dy**2))  # Pythagorean theorem
-        basic = abs(math.atan(dy / dx))
-        if dy > 0:
-            if dx > 0:
+        r = math.sqrt((coord.x**2) + (coord.y**2))  # Pythagorean theorem
+        basic = abs(math.atan(coord.y / coord.x))
+        if coord.y > 0:
+            if coord.x > 0:
                 theta = basic  # 1st quadrant
-            elif dx < 0:
+            elif coord.x < 0:
                 theta = PI - basic  # 2nd quadrant
             else:
                 theta = PI / 2  # up
-        elif dy < 0:
-            if dx < 0:
+        elif coord.y < 0:
+            if coord.x < 0:
                 theta = PI + basic  # 3rd quadrant
-            elif dx > 0:
+            elif coord.x > 0:
                 theta = 2 * PI - basic  # 4th quadrant
             else:
                 theta = 3 * PI / 2  # down
-        elif dy == 0:
-            if dx > 0:
+        elif coord.y == 0:
+            if coord.x > 0:
                 theta = 0  # right
-            if dx < 0:
+            if coord.x < 0:
                 theta = PI  # left
         dirstr = None
         dirstrlist = [
