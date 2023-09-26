@@ -677,33 +677,33 @@ class Room:
         else:
             raise ValueError("Direction passed is not of the right value")
 
-    # def set_creature_None(self) -> None:
-    #     """When the creature is killed, removes the creature from the room."""
-    #     self.creature = None
+    def set_creature_None(self) -> None:
+        """When the creature is killed, removes the creature from the room."""
+        self.creature = None
 
     def set_connected_True(self) -> None:
         """Setter method for connected attribute"""
         self.connected = True
 
-    # def get_creature(self) -> "Creature":
-    #     """Getter method for creature attribute"""
-    #     return self.creature
+    def get_creature(self) -> "Creature":
+        """Getter method for creature attribute"""
+        return self.creature
 
-    # def get_item(self) -> "Item":
-    #     """Getter method for item attribute"""
-    #     return self.item
+    def get_item(self) -> "Item":
+        """Getter method for item attribute"""
+        return self.item
 
-    # def set_creature(self, creature: "Creature") -> None:
-    #     """setter method for creature; might not need it"""
-    #     if self.creature is not None:
-    #         return None
-    #     self.creature = creature
-    #     return None
+    def set_creature(self, creature: "Creature") -> None:
+        """setter method for creature; might not need it"""
+        if self.creature is not None:
+            return None
+        self.creature = creature
+        return None
 
-    # def set_item(self, item: "Item") -> None:
-    #     if self.item is not None:
-    #         return None
-    #     self.item = item
+    def set_item(self, item: "Item") -> None:
+        if self.item is not None:
+            return None
+        self.item = item
 
     def set_access(self, room: "Room") -> None:
         diff = self.coord.direction_of(room.get_coord())
