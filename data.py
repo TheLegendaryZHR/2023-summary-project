@@ -554,13 +554,13 @@ SOMEROOM = "SOMEROOM"
 class Room:
     """
     -- ATTRIBUTES --
-    + coords: Coord
+    + coord: Coord
     + type: dict
     + connected: bool
-     mynorth: dict
-    + mysouth: dict
-    + myeast: dict
-    + mywest: dict
+    - mynorth: dict
+    - mysouth: dict
+    - myeast: dict
+    - mywest: dict
 
     
     -- METHODS --
