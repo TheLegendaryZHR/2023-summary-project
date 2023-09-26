@@ -56,14 +56,14 @@ cardinal = {
 }
 
 
-labsize = 10  # cannot be too small!!
+LABSIZE = 10  # cannot be too small!!
 
 
 def valid_coords(roomcoords: Coord) -> bool:
-   if i not in list(range(labsize)) or j not in list(range(labsize)):
+   if i not in list(range(LABSIZE)) or j not in list(range(LABSIZE)):
         return False
         print(
-            f"valid_coords() says that roomcoords {roomcoords} elements are not within integers from 0 to {labsize - 1}."
+            f"valid_coords() says that roomcoords {roomcoords} elements are not within integers from 0 to {LABSIZE - 1}."
         )
     return True
 
@@ -90,14 +90,14 @@ class Labyrinth:
     """
 
     def __init__(self):
-        nonelist = [None] * labsize
+        nonelist = [None] * LABSIZE
         self.lab = []
-        for i in range(labsize):
+        for i in range(LABSIZE):
             self.lab.append(nonelist.copy())
         self.difficulty_level = None
         self.boss_pos = Coord(-1, -1)  # Decided upon generation
         self.steve_pos = Coord(-1, -1)  # Decided upon generation
-        self.posscoords = list(range(labsize))
+        self.posscoords = list(range(LABSIZE))
 
     def get_room(self, coord: Coord) -> "Room":
         """Returns the room at the given coordinates"""
@@ -109,12 +109,12 @@ class Labyrinth:
 
     def layout(self) -> str:
         outputstr = ""
-        for y in range(labsize):
+        for y in range(LABSIZE):
             fulltopstr = ""
             fullmidstr = ""
             fullbottomstr = ""
-            for x in range(labsize):
-                room = self.get_room(Coord(x, labsize - y - 1))
+            for x in range(LABSIZE):
+                room = self.get_room(Coord(x, LABSIZE - y - 1))
                 N, S, E, W = room.get_neighbours_accessibility()
                 if N:
                     topstr = " || "
@@ -148,8 +148,8 @@ class Labyrinth:
 
     def generate(self) -> None:
         """Generates a maze without walls"""
-        for x in range(labsize):
-            for y in range(labsize):
+        for x in range(LABSIZE):
+            for y in range(LABSIZE):
                 coord = Coord(x, y)
                 self.set_room(coord, Room(coord))
         self._generate_place_steve_boss()
@@ -157,8 +157,8 @@ class Labyrinth:
 
     def _generate_nowalls(self) -> None:
         """Helper method for the generate() method. Makes sure all rooms are connected to all adjacent rooms in the labyrinth."""
-        for x in range(labsize):
-            for y in range(labsize):
+        for x in range(LABSIZE):
+            for y in range(LABSIZE):
                 coord = Coord(x, y)
                 this = self.get_room(coord)
                 for name, direction in cardinal.items():
@@ -187,8 +187,8 @@ class Labyrinth:
         """
         # self.difficulty_level = difficulty_level
         # put in empty rooms
-        for x in range(labsize):
-            for y in range(labsize):
+        for x in range(LABSIZE):
+            for y in range(LABSIZE):
                 coord = Coord(x, y)
                 self.set_room(coord, Room(coord))
         # choose location for steve and boss
@@ -206,18 +206,18 @@ class Labyrinth:
         - The possible rooms to be picked are rooms nearer to the perimeter than the center.
         - e.g. If the labyrinth is 10 by 10 rooms, the middle 6 by 6 rooms cannot be chosen as startroom. the surrounding 64 rooms can be chosen as rooms.
         - Of the 64 rooms nearing the far sides of the labyrinth, one room is chosen at random.
-        - This means that labsize cannot be too small, or the generation may break. ie labsize cannot be less than 4.
+        - This means that LABSIZE cannot be too small, or the generation may break. ie LABSIZE cannot be less than 4.
 
         How bossroom is chosen:
-        - e.g. labsize is set to 10 and startroom coords are [1, 7]
+        - e.g. LABSIZE is set to 10 and startroom coords are [1, 7]
         - bossroom is at the opposite of the labyrinth at [8, 2]
 
         Startroom will be remembered throughout the game, the starting position of the boss will not be remembered. 
         """
         # choose position of Start room randomly
-        n = labsize // 4
-        n = random.randint(-n, n - 1) % labsize
-        m = random.randint(0, labsize - 1)
+        n = LABSIZE // 4
+        n = random.randint(-n, n - 1) % LABSIZE
+        m = random.randint(0, LABSIZE - 1)
         nm = [n, m]
         random.shuffle(nm)
         steve_coord = Coord(nm[0], nm[1])
@@ -225,8 +225,8 @@ class Labyrinth:
         self.steve_pos = steve_coord
 
         # choose position of Monster room opposite to where steve is
-        boss_x = labsize - 1 - (steve_coord.x % labsize)
-        boss_y = labsize - 1 - (steve_coord.y % labsize)
+        boss_x = LABSIZE - 1 - (steve_coord.x % LABSIZE)
+        boss_y = LABSIZE - 1 - (steve_coord.y % LABSIZE)
         boss_coord = Coord(boss_x, boss_y)
         self.boss_pos = boss_coord
         if boss_coord.is_same(steve_coord):  # if they happen to be placed in the same room
@@ -244,8 +244,8 @@ class Labyrinth:
         # linearly search through the grid to find unconnected rooms, and connects them.
         # Stops when all are connected.
         while unconnected != 0:
-            for x in range(labsize):
-                for y in range(labsize):
+            for x in range(LABSIZE):
+                for y in range(LABSIZE):
                     coord = Coord(x, y)
                     room = self.get_room(coord)
                     if not room.is_connected_tostart():
@@ -267,7 +267,7 @@ class Labyrinth:
                                            roomcoords: Coord) -> bool:
         """Rules for a this room with coordinates roomcoords to be linked to its neighbour that is attempting to link to this:
         
-        1. It must have valid coords, within the appropriate range from 0 to labsize - 1
+        1. It must have valid coords, within the appropriate range from 0 to LABSIZE - 1
         2. It must not already be connected to the start.
         """
         if not valid_coords(roomcoords):
@@ -547,7 +547,7 @@ class Room:
         self.mysouth = None
         self.myeast = None
         self.mywest = None
-        if coord.y + 1 >= labsize:
+        if coord.y + 1 >= LABSIZE:
             self.mynorth = None
         else:
             self.mynorth = SOMEROOM
@@ -555,7 +555,7 @@ class Room:
             self.mysouth = None
         else:
             self.mysouth = SOMEROOM
-        if coord.x + 1 >= labsize:
+        if coord.x + 1 >= LABSIZE:
             self.myeast = None
         else:
             self.myeast = SOMEROOM
