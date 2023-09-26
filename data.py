@@ -609,51 +609,51 @@ class Room:
     def get_coord(self) -> Coord:
         return self.coord
 
-    def settype_startroom(self) -> None:
-        self.type["startroom?"] = True
-        self.type["steve?"] = True
-        self.connected = True
+    # def settype_startroom(self) -> None:
+    #     self.type["startroom?"] = True
+    #     self.type["steve?"] = True
+    #     self.connected = True
 
-    def steve_leaves(self) -> None:
-        if not self.steve_ishere(
-        ):  # Steve was not even here in this room in the first place
-            raise RuntimeError(
-                f"Steve is not in room {self.coord}, yet steve_leaves() is called.\nPossible desync between Labyrinth object's steve_pos attribute and this room object's type attribute values."
-            )
-        self.type["steve?"] = False
-        self.cleared = True
+    # def steve_leaves(self) -> None:
+    #     if not self.steve_ishere(
+    #     ):  # Steve was not even here in this room in the first place
+    #         raise RuntimeError(
+    #             f"Steve is not in room {self.coord}, yet steve_leaves() is called.\nPossible desync between Labyrinth object's steve_pos attribute and this room object's type attribute values."
+    #         )
+    #     self.type["steve?"] = False
+    #     self.cleared = True
 
-    def steve_enters(self) -> None:
-        if self.steve_ishere():
-            raise RuntimeError(
-                f"Steve is already in room {self.coord}, yet steve_enters() is called.\nPossible desync between Labyrinth object's steve_pos attribute and this room object's type attribute values."
-            )
-        self.type["steve?"] = True
-        if not self.cleared and not self.type["boss?"]:
-            if random.randint(1, 100) <= 50:  # 50% chance a creature spawn
-                self.creature = random_creature()
-                if random.randint(
-                        1, 100
-                ) <= 60:  # if creature spawns, 60% chance an item spawns
-                    self.item = random_item()
-            elif random.randint(
-                    1, 100
-            ) <= 40:  # if no creature spawned, 40% chance an item spawns
-                self.item = random_item()
+    # def steve_enters(self) -> None:
+    #     if self.steve_ishere():
+    #         raise RuntimeError(
+    #             f"Steve is already in room {self.coord}, yet steve_enters() is called.\nPossible desync between Labyrinth object's steve_pos attribute and this room object's type attribute values."
+    #         )
+    #     self.type["steve?"] = True
+    #     if not self.cleared and not self.type["boss?"]:
+    #         if random.randint(1, 100) <= 50:  # 50% chance a creature spawn
+    #             self.creature = random_creature()
+    #             if random.randint(
+    #                     1, 100
+    #             ) <= 60:  # if creature spawns, 60% chance an item spawns
+    #                 self.item = random_item()
+    #         elif random.randint(
+    #                 1, 100
+    #         ) <= 40:  # if no creature spawned, 40% chance an item spawns
+    #             self.item = random_item()
 
-    def boss_leaves(self) -> None:
-        if not self.boss_ishere():
-            raise RuntimeError(
-                f"Boss is not in room {self.coord}, yet boss_leaves() is called.\nPossible desync between Labyrinth object's boss_pos attribute and this room object's type attribute values."
-            )
-        self.type["boss?"] = False
+    # def boss_leaves(self) -> None:
+    #     if not self.boss_ishere():
+    #         raise RuntimeError(
+    #             f"Boss is not in room {self.coord}, yet boss_leaves() is called.\nPossible desync between Labyrinth object's boss_pos attribute and this room object's type attribute values."
+    #         )
+    #     self.type["boss?"] = False
 
-    def boss_enters(self) -> None:
-        if self.boss_ishere():
-            raise RuntimeError(
-                f"Boss is already in room {self.coord}, yet boss_enters() is called.\nPossible desync between Labyrinth object's boss_pos attribute and this room object's type attribute values."
-            )
-        self.type["boss?"] = True
+    # def boss_enters(self) -> None:
+    #     if self.boss_ishere():
+    #         raise RuntimeError(
+    #             f"Boss is already in room {self.coord}, yet boss_enters() is called.\nPossible desync between Labyrinth object's boss_pos attribute and this room object's type attribute values."
+    #         )
+    #     self.type["boss?"] = True
 
     def connect_dir(self, direction: Coord, neighbour: "Room") -> None:
         if not isinstance(neighbour, Room):
@@ -677,33 +677,33 @@ class Room:
         else:
             raise ValueError("Direction passed is not of the right value")
 
-    def set_creature_None(self) -> None:
-        """When the creature is killed, removes the creature from the room."""
-        self.creature = None
+    # def set_creature_None(self) -> None:
+    #     """When the creature is killed, removes the creature from the room."""
+    #     self.creature = None
 
     def set_connected_True(self) -> None:
         """Setter method for connected attribute"""
         self.connected = True
 
-    def get_creature(self) -> "Creature":
-        """Getter method for creature attribute"""
-        return self.creature
+    # def get_creature(self) -> "Creature":
+    #     """Getter method for creature attribute"""
+    #     return self.creature
 
-    def get_item(self) -> "Item":
-        """Getter method for item attribute"""
-        return self.item
+    # def get_item(self) -> "Item":
+    #     """Getter method for item attribute"""
+    #     return self.item
 
-    def set_creature(self, creature: "Creature") -> None:
-        """setter method for creature; might not need it"""
-        if self.creature is not None:
-            return None
-        self.creature = creature
-        return None
+    # def set_creature(self, creature: "Creature") -> None:
+    #     """setter method for creature; might not need it"""
+    #     if self.creature is not None:
+    #         return None
+    #     self.creature = creature
+    #     return None
 
-    def set_item(self, item: "Item") -> None:
-        if self.item is not None:
-            return None
-        self.item = item
+    # def set_item(self, item: "Item") -> None:
+    #     if self.item is not None:
+    #         return None
+    #     self.item = item
 
     def set_access(self, room: "Room") -> None:
         diff = self.coord.direction_of(room.get_coord())
@@ -776,11 +776,11 @@ class Room:
             "argument passed into dir_is_accessible() should be a direction value."
         )
 
-    def steve_ishere(self) -> bool:
-        return self.type["steve?"]
+    # def steve_ishere(self) -> bool:
+    #     return self.type["steve?"]
 
-    def boss_ishere(self) -> bool:
-        return self.type["boss?"]
+    # def boss_ishere(self) -> bool:
+    #     return self.type["boss?"]
 
 
 FOODITEM = "FOODITEM"
