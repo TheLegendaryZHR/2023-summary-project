@@ -194,7 +194,6 @@ class LabyrinthGenerator:
                 steve_coord):  # if they happen to be placed in the same room
             raise ValueError(
                 "Steve and the Boss have been put at the same location.")
-        self.get_room(boss_coord).boss_enters()
 
     def _generate_maze(self, startroom_pos: Coord) -> None:
         """Links up all rooms in a maze-like fashion"""
