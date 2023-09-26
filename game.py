@@ -200,7 +200,6 @@ class MUDGame:
         available_dir = []
         dir_provided = ''
         for dir in opt_dir.values():
-            breakpoint()
             if self.maze.can_move_here(current_location, dir):
                 available_dir.append(dir)
         for i in range(len(available_dir)):
