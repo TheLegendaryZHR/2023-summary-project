@@ -121,7 +121,8 @@ class LabyrinthGenerator:
                     if valid_coords(neighbour):
                         neighbour = self.get_room(neighbour)
                         this.connect_dir(direction, neighbour)
-
+        self._generate_place_steve_boss()
+ 
     def generate_random(self) -> None:
         """Generates the maze by:
         1. Filling in empty rooms in the empty maze
