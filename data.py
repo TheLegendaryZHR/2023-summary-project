@@ -132,6 +132,14 @@ class Labyrinth:
         self.steve_pos = Coord(-1, -1)  # Decided upon generation
         self.posscoords = list(range(labsize))
 
+    def get_room(self, coord: Coord) -> "Room":
+        """Returns the room at the given coordinates"""
+        return self.lab[coord.x][coord.y]
+
+    def set_room(self, coord: Coord, room: "Room") -> None:
+        """Returns the room at the given coordinates"""
+        self.lab[coord.x][coord.y] = room
+
     def layout(self) -> str:
         outputstr = ""
         for y in range(labsize):
@@ -139,7 +147,7 @@ class Labyrinth:
             fullmidstr = ""
             fullbottomstr = ""
             for x in range(labsize):
-                room = self.lab[x][labsize - y - 1]
+                room = self.get_room(Coord(x, labsize - y - 1))
                 N, S, E, W = room.get_neighbours_accessibility()
                 if N:
                     topstr = " || "
@@ -175,7 +183,8 @@ class Labyrinth:
         """Generates a maze without walls"""
         for x in range(labsize):
             for y in range(labsize):
-                self.lab[x][y] = Room(Coord(x, y))
+                coord = Coord(x, y)
+                self.set_room(coord, Room(coord))
         self._generate_place_steve_boss()
         self._generate_nowalls()
 
@@ -183,15 +192,13 @@ class Labyrinth:
         """Helper method for the generate() method. Makes sure all rooms are connected to all adjacent rooms in the labyrinth."""
         for x in range(labsize):
             for y in range(labsize):
-                this = self.lab[x][y]
-                for i in range(4):
-                    directionnum = DIRLIST[i]
-                    neighbourx, neighboury = x + directionnum[
-                        0], y + directionnum[1]
-                    if valid_coords([neighbourx, neighboury]):
-                        neighbour = self.lab[neighbourx][neighboury]
-                        direction = [NORTH, SOUTH, EAST, WEST][i]
-                        this.connect_dir(direction, neighbour)
+                coord = Coord(x, y)
+                this = self.get_room(coord)
+                for name, direction in cardinal.items():
+                    neighbour = coord.add(direction)
+                    if valid_coords(neighbour):
+                        neighbour = self.get_room(neighbour)
+                        this.connect_dir(name, neighbour)
 
     def generate_random(self) -> None:
         """Generates the maze by:
@@ -215,7 +222,8 @@ class Labyrinth:
         # put in empty rooms
         for x in range(labsize):
             for y in range(labsize):
-                self.lab[x][y] = Room(Coord(x, y))
+                coord = Coord(x, y)
+                self.set_room(coord, Room(coord))
         # choose location for steve and boss
         self._generate_place_steve_boss()
         # connecting all the rooms in a maze-like fashion
@@ -245,20 +253,19 @@ class Labyrinth:
         m = random.randint(0, labsize - 1)
         nm = [n, m]
         random.shuffle(nm)
-        steve_x, steve_y = nm
-        self.lab[steve_x][steve_y].settype_startroom()
-        self.steve_pos = Coord(steve_x, steve_y)
+        steve_coord = Coord(nm[0], nm[1])
+        self.get_room(steve_coord).settype_startroom()
+        self.steve_pos = steve_coord
 
         # choose position of Monster room opposite to where steve is
-        boss_x = labsize - 1 - (steve_x % labsize)
-        boss_y = labsize - 1 - (steve_y % labsize)
-        self.boss_pos = Coord(boss_x, boss_y)
-        if (boss_x, boss_y) == (
-                steve_x,
-                steve_y):  # if they happen to be placed in the same room
+        boss_x = labsize - 1 - (steve_coord.x % labsize)
+        boss_y = labsize - 1 - (steve_coord.y % labsize)
+        boss_coord = Coord(boss_x, boss_y)
+        self.boss_pos = boss_coord
+        if boss_coord.is_same(steve_coord):  # if they happen to be placed in the same room
             raise ValueError(
                 "Steve and the Boss have been put at the same location.")
-        self.lab[boss_x][boss_y].boss_enters()
+        self.get_room(boss_coord).boss_enters()
 
     def _generate_maze(self, startroom_pos: Coord) -> None:
         """Links up all rooms in a maze-like fashion"""
@@ -272,9 +279,10 @@ class Labyrinth:
         while unconnected != 0:
             for x in range(labsize):
                 for y in range(labsize):
-                    room = self.lab[x][y]
+                    coord = Coord(x, y)
+                    room = self.get_room(coord)
                     if not room.is_connected_tostart():
-                        self._generate_force_connect(Coord(x, y))
+                        self._generate_force_connect(coord)
             unconnected = self._generate_count_unconnected_rooms()
 
     def _generate_force_connect(self, roomcoords: Coord) -> None:
@@ -297,7 +305,7 @@ class Labyrinth:
         """
         if not valid_coords(roomcoords):
             return False
-        room_object = self.lab[roomcoords.x][roomcoords.y]
+        room_object = self.get_room(roomcoords)
         if room_object.is_connected_tostart():  # has access
             return False
         return True
@@ -316,7 +324,7 @@ class Labyrinth:
         
         """
         # current room should already be connected
-        thisroom = self.lab[thisroomcoords.x][thisroomcoords.y]  # object thisroom object
+        thisroom = self.get_room(thisroomcoords)  # object thisroom object
         if not thisroom.is_connected_tostart():
             raise ValueError(
                 "Room that is trying to (recursively) link to others is not yet connected, should not happen."
@@ -353,8 +361,8 @@ class Labyrinth:
                 "_generate_link_rooms(): non adjacent rooms are passed, cannot be linked."
             )
         # linking rooms
-        room1 = self.lab[room1coords.x][room1coords.y]
-        room2 = self.lab[room2coords.x][room2coords.y]
+        room1 = self.get_room(room1coords)
+        room2 = self.get_room(room2coords)
         if room1.is_connected_tostart() or room2.is_connected_tostart():
             room1.set_connected_True()
             room2.set_connected_True()
@@ -397,9 +405,9 @@ class Labyrinth:
         random.shuffle(directions)
         for direction in directions:
             if self.can_move_here(self.boss_pos, direction):
-                self.lab[self.boss_pos.x][self.boss_pos.y].boss_leaves()
+                self.get_room(self.boss_pos).boss_leaves()
                 self.boss_pos = self.boss_pos.add(direction)
-                self.lab[self.boss_pos.x][self.boss_pos.y].boss_enters()
+                self.get_room(self.boss_pos).boss_enters()
                 return None
         raise RuntimeError(
             f"Boss cannot move because its room {self.boss_pos} is unlinked to neighbours."
@@ -410,9 +418,9 @@ class Labyrinth:
             raise ValueError(
                 "move_steve() attempted to move steve to a direction that is not possible."
             )
-        self.lab[self.steve_pos.x][self.steve_pos.y].steve_leaves()
+        self.get_room(self.steve_pos).steve_leaves()
         self.steve_pos = self.steve_pos.add(direction)
-        self.lab[self.steve_pos.x][self.steve_pos.y].steve_enters()
+        self.get_room(self.steve_pos).steve_enters()
 
     def can_move_here(self, this_coords: Coord, direction) -> bool:
         """Tells whether an adjacent room is accessible.
@@ -422,7 +430,7 @@ class Labyrinth:
         """
         if not valid_coords(this_coords):  # this should not happen at all
             raise IndexError("entity is not inside of maze")
-        thisroom = self.lab[this_coords.x][this_coords.y]
+        thisroom = self.get_room(self.this_coords)
         return thisroom.dir_is_accessible(direction)
 
     def _steve_useitem(self, item) -> None:
