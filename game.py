@@ -1,6 +1,7 @@
 #File containing the code for the game
-import data
 import random
+
+import data
 
 NORTH = "NORTH"
 SOUTH = "SOUTH"
@@ -14,7 +15,9 @@ class MUDGame:
     def __init__(self) -> None:
         self.gameover = False  # default
         self.won = False  # default
-        labyrinth = data.LabyrinthGenerator().get_lab()
+        generator = data.LabyrinthGenerator()
+        generator.generate()
+        labyrinth = generator.get_lab()
         self.maze = data.LabyrinthManager(labyrinth)
         self.steve = data.Steve()
         self.steve_path = []
@@ -81,9 +84,8 @@ class MUDGame:
         Validate player's choice when given 2 options.
         Returns a Boolean value.
         """
-        if opt in '12':
-            if len(opt) == 1:
-                return True
+        if opt in '12' and len(opt) == 1:
+            return True
         return False
 
     def battle(self) -> None:
@@ -93,8 +95,8 @@ class MUDGame:
         Only boss and steve are able to heal themselves.
         Battle continues until one dies.
         """
-        x, y = self.maze.get_current_pos()
-        room = self.maze.lab[x][y]
+        coord = self.maze.get_current_pos()
+        room = self.maze.get_room(coord)
         creature = room.get_creature()
         print(f"You have encountered the {creature.get_name()}!")
         while not self.steve.isdead() and not creature.isdead():
@@ -161,8 +163,8 @@ class MUDGame:
         """
         Returns True when creature is found in the room.
         """
-        x, y = self.maze.get_current_pos()
-        room = self.maze.lab[x][y]
+        coord = self.maze.get_current_pos()
+        room = self.maze.get_room(coord)
         if room.get_creature() is None:
             return False
         return True
@@ -171,8 +173,8 @@ class MUDGame:
         """
         Returns True if item is found in the room.
         """
-        x, y = self.maze.get_current_pos()
-        room = self.maze.lab[x][y]
+        coord = self.maze.get_current_pos()
+        room = self.maze.get_room(coord)
         if room.get_item() is None:
             return False
         return True
@@ -205,7 +207,7 @@ class MUDGame:
                 i + 1) + '. ' + available_dir[i] + ' '
         validity = False
         n = 0
-        while validity == False:
+        while validity is False:
             n += 1
             if n > 1:
                 self.invalid_opt()
@@ -215,9 +217,8 @@ class MUDGame:
             valid_choice = ''
             for i in range(no_of_choice):
                 valid_choice += str(i + 1)
-            if choice in valid_choice:
-                if len(choice) == 1:
-                    validity = True
+            if choice in valid_choice and len(choice) == 1:
+                validity = True
         choice = int(choice)
         self.maze.move_steve(available_dir[choice - 1])
 
@@ -295,8 +296,8 @@ class MUDGame:
             # armor and weapon item will be automatically picked up
             # player can choose to pick up food item or not
             if self.item_found():
-                x, y = self.maze.get_current_pos()
-                room = self.maze.lab[x][y]
+                coord = self.maze.get_current_pos()
+                room = self.maze.get_room(coord)
                 item = room.get_item()
                 if item.item_type == 'Weapon':
                     self.steve.equip_weapon(item)

@@ -61,7 +61,7 @@ LABSIZE = 10  # cannot be too small!!
 
 
 def valid_coords(roomcoords: Coord) -> bool:
-    if i not in list(range(LABSIZE)) or j not in list(range(LABSIZE)):
+    if roomcoords.x not in list(range(LABSIZE)) or roomcoords.y not in list(range(LABSIZE)):
         return False
         print(
             f"valid_coords() says that roomcoords {roomcoords} elements are not within integers from 0 to {LABSIZE - 1}."
@@ -341,6 +341,7 @@ class LabyrinthManager:
     + get_current_pos() -> Coord
     + move_boss(self) -> None
     + move_steve(self) -> None
+    + can_move_here() -> bool
    """
 
     def __init__(self, labyrinth: list[list["Room"]]):
@@ -410,7 +411,7 @@ class LabyrinthManager:
         directions = list(cardinal.values())
         random.shuffle(directions)
         for direction in directions:
-            if self._can_move_here(self.boss_pos, direction):
+            if self.can_move_here(self.boss_pos, direction):
                 self.get_room(self.boss_pos).boss_leaves()
                 self.boss_pos = self.boss_pos.add(direction)
                 self.get_room(self.boss_pos).boss_enters()
@@ -420,7 +421,7 @@ class LabyrinthManager:
         )
 
     def move_steve(self, direction: Coord) -> None:
-        if not self._can_move_here(self.steve_pos, direction):
+        if not self.can_move_here(self.steve_pos, direction):
             raise ValueError(
                 "move_steve() attempted to move steve to a direction that is not possible."
             )
@@ -428,7 +429,7 @@ class LabyrinthManager:
         self.steve_pos = self.steve_pos.add(direction)
         self.get_room(self.steve_pos).steve_enters()
 
-    def _can_move_here(self, this_coords: Coord, direction: Coord) -> bool:
+    def can_move_here(self, this_coords: Coord, direction: Coord) -> bool:
         """Tells whether an adjacent room is accessible.
         Rules:
         1. There is no wall between this room and the neighbour.
