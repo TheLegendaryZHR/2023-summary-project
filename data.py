@@ -218,7 +218,7 @@ class Labyrinth:
         # put in empty rooms
         for x in range(labsize):
             for y in range(labsize):
-                self.lab[x][y] = Room(x, y)
+                self.lab[x][y] = Room(Coord(x, y))
         # choose location for steve and boss
         self._generate_place_steve_boss()
         # connecting all the rooms in a maze-like fashion
@@ -277,18 +277,18 @@ class Labyrinth:
                 for y in range(labsize):
                     room = self.lab[x][y]
                     if not room.is_connected_tostart():
-                        self._generate_force_connect([x, y])
+                        self._generate_force_connect(Coord(x, y))
             unconnected = self._generate_count_unconnected_rooms()
 
     def _generate_force_connect(self, roomcoords: Coord) -> None:
         """links holes in connectivity of maze to as many adjacent rooms as possible.
         Game design: Does so in an unpredictable (random) sequence, so that this has a lower chance of being exploitable by the player."""
-        newdirlist = DIRLIST.copy()
+        newdirlist = list(cardinal.values())
         random.shuffle(newdirlist)
         for i in range(4):
             neighbourcoords = [
-                roomcoords[0] + newdirlist[i][0],
-                roomcoords[1] + newdirlist[i][1]
+                Coord(roomcoords.x + newdirlist[i].x),
+                Coord(roomcoords.y + newdirlist[i].y)
             ]
             if valid_coords(neighbourcoords):
                 self._generate_link_rooms(
@@ -303,8 +303,7 @@ class Labyrinth:
         """
         if not valid_coords(roomcoords):
             return False
-        x, y = roomcoords
-        room_object = self.lab[x][y]
+        room_object = self.lab[roomcoords.x][roomcoords.y]
         if room_object.is_connected_tostart():  # has access
             return False
         return True
