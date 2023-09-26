@@ -646,7 +646,7 @@ class Room:
             )
         self.type["boss?"] = True
 
-    def connect_dir(self, direction, neighbour: "Room") -> None:
+    def connect_dir(self, direction: Coord, neighbour: "Room") -> None:
         if not isinstance(neighbour, Room):
             print(self.coord, neighbour.coords)
             raise ValueError(
@@ -657,13 +657,13 @@ class Room:
                 "neighbour variable passed is not an adjacent room")
 
         # makes assumptions that {direction} of this room is neighbour.
-        if direction == NORTH:
+        if direction.is_same(cardinal["NORTH"]):
             self.mynorth = neighbour
-        elif direction == SOUTH:
+        elif direction.is_same(cardinal["SOUTH"]):
             self.mysouth = neighbour
-        elif direction == EAST:
+        elif direction.is_same(cardinal["EAST"]):
             self.myeast = neighbour
-        elif direction == WEST:
+        elif direction.is_same(cardinal["WEST"]):
             self.mywest = neighbour
         else:
             raise ValueError("Direction passed is not of the right value")
