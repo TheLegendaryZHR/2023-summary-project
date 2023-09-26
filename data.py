@@ -5,10 +5,6 @@ import random
 import math
 import time
 
-NORTH = "NORTH"
-SOUTH = "SOUTH"
-WEST = "WEST"
-EAST = "EAST"
 # NOVICE = "NOVICE"
 # JOURNEYMAN = "JOURNEYMAN"
 # MASTER = "MASTER"
@@ -58,35 +54,6 @@ cardinal = {
     "EAST": Coord(0, 1),
     "WEST": Coord(0, -1)
 }
-
-
-def is_adjacent(room1: Coord, room2: Coord) -> bool:
-
-    xdiff = room1[0] - room2[0]
-    ydiff = room1[1] - room2[1]
-    for i in DIRLIST:
-        if [xdiff, ydiff] == i:
-            return True
-    return False
-
-
-def direction_of(
-        targetcoords: Coord,
-        neighbourcoords: Coord) -> "NORTH or SOUTH or EAST or WEST":
-    if not is_adjacent(targetcoords, neighbourcoords):
-        return None
-    xdiff = neighbourcoords[0] - targetcoords[0]
-    ydiff = neighbourcoords[1] - targetcoords[1]
-    if xdiff == 0:
-        if ydiff == 1:
-            return NORTH
-        elif ydiff == -1:
-            return SOUTH
-    elif ydiff == 0:
-        if xdiff == 1:
-            return EAST
-        if xdiff == -1:
-            return WEST
 
 
 labsize = 10  # cannot be too small!!
