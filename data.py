@@ -23,6 +23,8 @@ class Coord:
     Coordinates are represented as (x, y), with x and y being ints.
     """
     def __init__(self, x: int, y: int) -> None:
+        assert isinstance(x, int)
+        assert isinstance(y, int)
         self.x = x
         self.y = y
 
@@ -36,7 +38,7 @@ class Coord:
             return True
         return False
 
-    def direction_of(self, neighbour: "Coord") -> "Coord":
+   def direction_of(self, neighbour: "Coord") -> "Coord":
         return Coord(neighbour.x - self.x, neighbour.y - self.y)
 
 
@@ -81,22 +83,7 @@ labsize = 10  # cannot be too small!!
 
 
 def valid_coords(roomcoords: Coord) -> bool:
-    if type(roomcoords) is not list:
-        print(
-            f"valid_coords() says that roomcoords {roomcoords} is not a list.")
-        return False
-    if len(roomcoords) != 2:
-        print(
-            f"valid_coords() says that roomcoords {roomcoords} does not have exactly 2 elements."
-        )
-        return False
-    i, j = roomcoords
-    if type(i) is not int or type(j) is not int:
-        return False
-        print(
-            f"valid_coords() says that roomcoords {roomcoords} elements are not type int."
-        )
-    if i not in list(range(labsize)) or j not in list(range(labsize)):
+   if i not in list(range(labsize)) or j not in list(range(labsize)):
         return False
         print(
             f"valid_coords() says that roomcoords {roomcoords} elements are not within integers from 0 to {labsize - 1}."
