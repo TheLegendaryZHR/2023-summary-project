@@ -219,7 +219,7 @@ class MUDGame:
             if choice in valid_choice and len(choice) == 1:
                 validity = True
         choice = int(choice)
-        self.maze.move_steve(available_dir[choice - 1])
+        self.maze.move_steve(data.cardinal[available_dir[choice - 1]])
 
     def moveboss(self) -> None:
         """
