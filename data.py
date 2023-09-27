@@ -547,9 +547,6 @@ class LabyrinthManager:
         return self.steve_pos.direction_of(self.boss_pos)
 
 
-SOMEROOM = "SOMEROOM"
-
-
 class Room:
     """
     -- ATTRIBUTES --
@@ -584,22 +581,6 @@ class Room:
         self.mysouth = None
         self.myeast = None
         self.mywest = None
-        if coord.y + 1 >= LABSIZE:
-            self.mynorth = None
-        else:
-            self.mynorth = SOMEROOM
-        if coord.y <= 0:
-            self.mysouth = None
-        else:
-            self.mysouth = SOMEROOM
-        if coord.x + 1 >= LABSIZE:
-            self.myeast = None
-        else:
-            self.myeast = SOMEROOM
-        if coord.x <= 0:
-            self.mywest = None
-        else:
-            self.mywest = SOMEROOM
 
     def get_coord(self) -> Coord:
         return self.coord
@@ -694,7 +675,7 @@ class Room:
 
     def get_neighbours_statuses(
         self
-    ) -> list["Room or SOMEROOM or None"]:  # corresponding to N, S, E, W
+    ) -> "list[Room | None]":  # corresponding to N, S, E, W
         return [self.mynorth, self.mysouth, self.myeast, self.mywest]
 
     def get_neighbours_accessibility(self) -> list[bool]:
