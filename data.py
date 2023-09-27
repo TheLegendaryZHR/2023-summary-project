@@ -365,7 +365,7 @@ class LabyrinthManager:
             fullbottomstr = ""
             for x in range(LABSIZE):
                 room = self.get_room(Coord(x, LABSIZE - y - 1))
-                N, S, E, W = room.get_neighbours_accessibility()
+                N, S, E, W = room.get_neighbours()
                 if N:
                     topstr = " || "
                 else:
@@ -680,12 +680,6 @@ class Room:
     ) -> "list[Room | None]":  # corresponding to N, S, E, W
         """Return a list of rooms in each of the N, S, E, W directions."""
         return list(self.connected_rooms.values())
-
-    def get_neighbours_accessibility(self) -> list[bool]:
-        """Return a list of bools, representing the presence of
-        a room in each of the N, S, E, W directions.
-        """
-        return [bool(room) for room in self.connected_rooms.values()]
 
     def dir_is_accessible(self, direction: Coord) -> bool:
         if direction == cardinal["NORTH"]:
