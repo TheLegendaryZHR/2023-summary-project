@@ -4,6 +4,7 @@ import json
 import random
 import math
 import time
+from typing import Optional, Type
 
 # NOVICE = "NOVICE"
 # JOURNEYMAN = "JOURNEYMAN"
@@ -717,6 +718,82 @@ class Weapon(Item):
 DEFAULT_HITPOINTS = 50
 
 
+class Slot:
+    """Encapsulates a single inventory slot"""
+    def __init__(self, item, count: int = 1):
+        self.item = item
+        self.count = count
+
+    def incr(self, num: int) -> None:
+        """Increment count by num"""
+        assert num > 0
+        self.count += num
+
+    def decr(self, num: int) -> None:
+        """Decrement count by num"""
+        assert num > 0
+        assert self.count >= num
+        self.count -= num
+
+
+class Inventory:
+    """Encapsulates access to a character's inventory"""
+    def __init__(self):
+        self.contents = {}
+
+    def add(self, item: "Item", num: int = 1) -> bool:
+        """Add the item into the inventory.
+        Return True if the item was successfully added to inventory,
+        otherwise False.
+        """
+        if item.name in self.contents:
+            self.contents[item.name].incr(num)
+        else:
+            self.contents[item.name] = Slot(item, num)
+        return True
+
+    def consume(self, item: "Item", num: int = 1) -> bool:
+        """remove num of item from the inventory.
+        Return True if the item was successfully removed inventory,
+        otherwise False.
+        """
+        # Check item existence
+        if item.name not in self.contents:
+            return False
+        # Check if count is sufficient
+        slot = self.contents[item.name]
+        if slot.count < num:
+            return False
+        self.contents[item.name].decr(num)
+        return True
+
+    def is_empty(self) -> bool:
+        return len(self.contents) == 0
+
+    def length(self) -> int:
+        """Returns number of slots in inventory"""
+        return len(self.contents)
+
+    def format_contents(self, slots: list[Slot]) -> list[str]:
+        """Return a list of strings, each string representing
+        one item in the inventory and its count"""
+        contents = []
+        for i, slot in enumerate(slots, start=1):
+            contents.append(
+                f"{i:>2}. {slot.count:>2} x {slot.item.name}"
+            )
+        return contents 
+
+    def items(self, category: Optional[Type[Item]] = None) -> list[Slot]:
+        """Return a list of item slots in inventory of the given type."""
+        if not category:
+            return list(self.contents.values())
+        else:
+            return [
+            slot for slot in self.contents.values()
+            if isinstance(slot.item, category)
+        ]
+
 class Steve:
     """
     -- ATTRIBUTES --
@@ -725,6 +802,7 @@ class Steve:
     """
 
     def __init__(self):
+        self.inventory = Inventory()
         self._inventory = []  # list of dict
         # each dict in self.inventory describes an item, as well as the number of it in the inventory.
         # e.g. {"item": Health_Potion, "number": 2}
@@ -740,29 +818,27 @@ class Steve:
         return f"Steve has {self.health} HP."
 
     def display_inventory(self) -> None:
-        if self._inventory == []:
+        if self.inventory.is_empty():
             print("You have no items in your inventory.\n")
-            return None
+            return
         print("\nYou have:\n")
-        for i in range(len(self._inventory)):
-            dict_ = self._inventory[i]
-            item, number = str(dict_["item"]), str(dict_["number"])
-            prefix = i + 1
-            print(f"{prefix:>2}. {number:>2} x {item}")
-        print("\n")
-        return None
+        item_slots = self.inventory.items()
+        for line in self.inventory.format_contents(item_slots):
+            print(line)
 
-    def _add_item_to_inv(self, new_item: "Item", num: int) -> None:
-        for index, dict_ in enumerate(
-                self._inventory):  # Linear search through inventory
-            if str(new_item) == str(
-                    dict_["item"]):  # new_item is already in the inventory
-                self._inventory[index]["number"] += num
-                return None
-        # If exit loop, inventory does not have any of new_item
-        # create a dict to add to self.inventory
-        self._inventory.append({"item": new_item, "number": num})
-        return None
+    def get_all_items(self) -> list[Slot]:
+        """Return a list of slots representing all inventory items"""
+        return self.inventory.items()
+
+    def get_food_items(self) -> list[Slot]:
+        """Return a list of slots representing food items"""
+        return self.inventory.items(Food)
+
+    def take_item(self, item: "Item", num: int) -> bool:
+        """Return True if the item was successfully added to inventory,
+        otherwise False.
+        """
+        return self.inventory.add(item, num)
 
     def _discard_item(self, item: Item, num: int) -> None:
         for index, dict_ in enumerate(

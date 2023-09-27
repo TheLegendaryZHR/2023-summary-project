@@ -101,7 +101,7 @@ class MUDGame:
         print(f"You have encountered the {creature.get_name()}!")
         while not self.steve.isdead() and not creature.isdead():
             print(self.steve)  # show HP
-            if len(self.steve._inventory) == 0:
+            if self.steve.inventory.isempty():
                 print(
                     f'You have no heal items! \nAttack the {creature.get_name()}.'
                 )
@@ -151,7 +151,7 @@ class MUDGame:
         Validate player's option when choosing food items from inventory.
         Used for battle()
         """
-        range_of_option = len(self.steve._inventory) + 1
+        range_of_option = self.steve.inventory.length() + 1
         valid_opt = []
         for i in range(1, range_of_option):
             valid_opt.append(str(i))
@@ -309,7 +309,7 @@ class MUDGame:
                     self.show_options('item')
                     item_choice = self.prompt_player()
                     if item_choice == '1':
-                        self.steve._add_item_to_inv(item, 1)
+                        self.steve.take_item(item, 1)
             else:
                 print('No item found in this room.')
 
