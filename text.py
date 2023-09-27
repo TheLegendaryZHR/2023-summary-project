@@ -69,5 +69,10 @@ clues_shortrange = [
     "A blood-curdling roar seemed to shake the entire room with it. You flinched with no control over your body.\nYou must be close to the king warden.",
     "A blood-curdling roar seemed to shake the entire room with it. You flinched with no control over your body.\nYou must be close to the king warden.",
 ]
-clues_mediumrange = []
-clues_longrange = []
+clues_mediumrange = ["A hair-raising, wrathful whine from afar stuns you, shattering the stillness of cold air."]
+clues_longrange = ["Distant but colossal footsteps were heard."]
+clues_distant = ["Hardly audible footsteps were heard."]
+easter_egg = "You hear a rawr.\nEaster egg achieved!"
+
+def clues_direction(direction: str) -> str:
+    return f"The sound seemed to come from {direction}."

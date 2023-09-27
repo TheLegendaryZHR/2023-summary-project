@@ -434,23 +434,22 @@ class LabyrinthManager:
         if i <= 20:
             print(random.choice(text.clues_noclue))
             return None
+        
         r, dirstr = self._r_dir_calc(displacement)
         if r < 3:
             print(random.choice(text.clues_shortrange))
         elif r < 6:
             i = random.randint(1, 100)
             if i == 1:
-                print("You hear a rawr.")
-                print("Easter egg achieved!")
+                print(text.easter_egg)
             else:
-                print(
-                    "A hair-raising, wrathful whine from afar stuns you, shattering the stillness of cold air."
-                )
+                print(random.choice(text.clues_mediumrange))
         elif r < 10:
-            print("Distant but colossal footsteps were heard.")
+            print(random.choice(text.clues_longrange))
         else:
-            print("Hardly audible footsteps were heard.")
-        print(f"The sound seemed to come from {dirstr}.")
+            print(random.choice(text.clues_distant))
+        
+        print(text.clues_direction(dirstr))
 
     def _r_dir_calc(self, coord: Coord) -> tuple[float, str]:
         """maths work for _give_sound_clue
