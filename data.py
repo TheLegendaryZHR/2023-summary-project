@@ -682,23 +682,15 @@ class Room:
         return list(self.connected_rooms.values())
 
     def dir_is_accessible(self, direction: Coord) -> bool:
-        if direction == cardinal["NORTH"]:
-            if not isinstance(self.get_direction("NORTH"), Room):
-                return False
-            return True
-        if direction == cardinal["SOUTH"]:
-            if not isinstance(self.get_direction("SOUTH"), Room):
-                return False
-            return True
-        if direction == cardinal["EAST"]:
-            if not isinstance(self.get_direction("EAST"), Room):
-                return False
-            return True
-        if direction == cardinal["WEST"]:
-            if not isinstance(self.get_direction("WEST"), Room):
-                return False
-            return True
-        breakpoint()
+        """Returns True if a room exists in the given direction,
+        otherwise False.
+        """
+        assert isinstance(direction, Coord)
+        if direction not in cardinal.values():
+            return False
+        for dir_name, dir_coord in cardinal.items():
+            if direction == dir_coord:
+                return bool(self.get_direction(dir_name))
         raise ValueError(
             "argument passed into dir_is_accessible() should be a direction value."
         )
