@@ -596,13 +596,13 @@ class Room:
 
         # makes assumptions that {direction} of this room is neighbour.
         if direction.is_same(cardinal["NORTH"]):
-            self.set_north(neighbour)
+            self.set_direction("NORTH", neighbour)
         elif direction.is_same(cardinal["SOUTH"]):
-            self.set_south(neighbour)
+            self.set_direction("SOUTH", neighbour)
         elif direction.is_same(cardinal["EAST"]):
-            self.set_east(neighbour)
+            self.set_direction("EAST", neighbour)
         elif direction.is_same(cardinal["WEST"]):
-            self.set_west(neighbour)
+            self.set_direction("WEST", neighbour)
         else:
             raise ValueError("Direction passed is not of the right value")
 
@@ -629,6 +629,28 @@ class Room:
         if self.item is not None:
             return None
         self.item = item
+
+    def get_direction(self, dir_name: str) -> "Room | None":
+        if dir_name == "NORTH":
+            return self.mynorth
+        elif dir_name == "SOUTH":
+            return self.mysouth
+        elif dir_name == "EAST":
+            return self.myeast
+        elif dir_name == "WEST":
+            return self.mywest
+        raise ValueError(f"{dir_name!r}: invalid direction")
+
+    def set_direction(self, dir_name: str, room: "Room") -> None:
+        assert isinstance(room, Room)
+        if dir_name == "NORTH":
+            self.mynorth = room
+        elif dir_name == "SOUTH":
+            self.mysouth = room
+        elif dir_name == "EAST":
+            self.myeast = room
+        elif dir_name == "WEST":
+            self.mywest = room
 
     def get_north(self) -> "Room | None":
         return self.mynorth
@@ -673,29 +695,29 @@ class Room:
             )
         diff = self.coord.direction_of(room.get_coord())
         if diff == cardinal["NORTH"]:
-            if not self.get_north():
+            if not self.get_direction("NORTH"):
                 raise ValueError(
                     f'Room {self.coord} has no room to the north of it, access cannot be set.'
                 )
-            self.set_north(room)
+            self.set_direction("NORTH", room)
         elif diff == cardinal["SOUTH"]:
-            if not self.get_south():
+            if not self.get_direction("SOUTH"):
                 raise ValueError(
                     f'Room {self.coord} has no room to the south of it, access cannot be set.'
                 )
-            self.set_south(room)
+            self.set_direction("SOUTH", room)
         elif diff == cardinal["EAST"]:
-            if not self.get_east():
+            if not self.get_direction("EAST"):
                 raise ValueError(
                     f'Room {self.coord} has no room to the east of it, access cannot be set.'
                 )
-            self.set_east(room)
+            self.set_direction("EAST", room)
         elif diff == cardinal["WEST"]:
-            if not self.get_west():
+            if not self.get_direction("WEST"):
                 raise ValueError(
                     f'Room {self.coord} has no room to the west of it, access cannot be set.'
                 )
-            self.set_west(room)
+            self.set_direction("WEST", room)
         else:
             raise ValueError(
                 f"{self!r} and {room!r} should be adjacent but are not"
@@ -704,7 +726,7 @@ class Room:
     def get_neighbours_statuses(
         self
     ) -> "list[Room | None]":  # corresponding to N, S, E, W
-        return [self.get_north(), self.get_south(), self.get_east(), self.get_west()]
+        return [self.get_direction("NORTH"), self.get_direction("SOUTH"), self.get_direction("EAST"), self.get_direction("WEST")]
 
     def get_neighbours_accessibility(self) -> list[bool]:
         outputlist = []
@@ -714,19 +736,19 @@ class Room:
 
     def dir_is_accessible(self, direction: Coord) -> bool:
         if direction == cardinal["NORTH"]:
-            if not isinstance(self.get_north(), Room):
+            if not isinstance(self.get_direction("NORTH"), Room):
                 return False
             return True
         if direction == cardinal["SOUTH"]:
-            if not isinstance(self.get_south(), Room):
+            if not isinstance(self.get_direction("SOUTH"), Room):
                 return False
             return True
         if direction == cardinal["EAST"]:
-            if not isinstance(self.get_east(), Room):
+            if not isinstance(self.get_direction("EAST"), Room):
                 return False
             return True
         if direction == cardinal["WEST"]:
-            if not isinstance(self.get_west(), Room):
+            if not isinstance(self.get_direction("WEST"), Room):
                 return False
             return True
         breakpoint()
