@@ -1,10 +1,12 @@
 #File for data designer
 
 import json
-import random
 import math
+import random
 import time
 from typing import Optional, Type
+
+import text
 
 # NOVICE = "NOVICE"
 # JOURNEYMAN = "JOURNEYMAN"
@@ -807,7 +809,7 @@ class Steve:
 
     def display_inventory(self) -> None:
         if self.inventory.is_empty():
-            print("You have no items in your inventory.\n")
+            print(text.inventory_empty + "\n")
             return
         print("\nYou have:\n")
         item_slots = self.inventory.items()
@@ -884,14 +886,10 @@ class Steve:
         prevhp = self.health
         if change > 0:
             self.health = min(self.health + change, 50)
-            print(
-                f"You were healed by {self.health - prevhp} HP and now have {self.health}."
-            )
+            print(text.heal_report(self.health - prevhp, self.health))
             return None
         self.health = max(self.health + change, 0)
-        print(
-            f"You got hurt by {prevhp - self.health} HP and have {self.health} left."
-        )
+        print(text.damage_report(prevhp - self.health, self.health))
         return None
 
     def get_defence(self):
@@ -991,25 +989,19 @@ class Creeper(Creature):
 
     def _generate_attack(self, attack: int, turn_number: int) -> int:
         random_letter = random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        print(
-            "AHHHHHHH A CREEPER HAS APPEARED!!!! RUN AWAY QUICK BY\n PRESSING THE FOLLOWING LETTER:"
-        )
+        print(text.creeper_prompt)
         time.sleep(2)
         start_time = time.time()
-        inp = input("ENTER THE LETTER " + random_letter + " QUICK: ")
-        print("KABOOOOOMMMMM THE CREEPER EXPLODEDDDDD!!!!!!")
+        inp = input(text.creeper_quickevent(random_letter))
+        print(text.creeper_explode)
         self.hitpoints = 0
         if inp.upper() == random_letter and time.time() - start_time <= 1.8:
-            print(
-                "\nLuckily, your quick reactions allowed you to avoid the explosion. You took no damage."
-            )
+            print("\n" + text.creeper_dodge_success)
             return None
         elif inp.upper() != random_letter:
-            print(
-                "\nOh no! You took the wrong action and got caught in the blast!"
-            )
+            print("\n" + text.creeper_dodge_failure)
         elif (time.time() - start_time) > 1.8:
-            print("\nOh no! You were too slow and got caught in the blast!")
+            print("\n" + text.creeper_dodge_slow)
         attack = int((attack) * ((turn_number / 10) + 1) *
                      (random.randint(90, 110) / 100))
         return attack
