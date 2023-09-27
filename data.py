@@ -701,9 +701,6 @@ class Room:
                 f"{self!r} and {room!r} should be adjacent but are not"
             )
 
-    def is_connected_tostart(self) -> bool:
-        return self.is_connected_tostart
-
     def get_neighbours_statuses(
         self
     ) -> "list[Room | None]":  # corresponding to N, S, E, W
