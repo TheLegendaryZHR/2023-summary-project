@@ -66,9 +66,6 @@ LABSIZE = 10  # cannot be too small!!
 def valid_coords(roomcoords: Coord) -> bool:
     if roomcoords.x not in list(range(LABSIZE)) or roomcoords.y not in list(range(LABSIZE)):
         return False
-        print(
-            f"valid_coords() says that roomcoords {roomcoords} elements are not within integers from 0 to {LABSIZE - 1}."
-        )
     return True
 
 
