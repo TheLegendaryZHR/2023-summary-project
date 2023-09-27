@@ -608,10 +608,6 @@ class Room:
         else:
             raise ValueError("Direction passed is not of the right value")
 
-    def set_creature_None(self) -> None:
-        """When the creature is killed, removes the creature from the room."""
-        self.creature = None
-
     def get_creature(self) -> "Creature":
         """Getter method for creature attribute"""
         return self.creature
