@@ -586,25 +586,26 @@ class Room:
     def get_coord(self) -> Coord:
         return self.coord
 
-    def connect_dir(self, direction: Coord, neighbour: "Room") -> None:
-        if not isinstance(neighbour, Room):
-            print(self.coord, neighbour.coords)
+    def connect_dir(self, direction: Coord, room: "Room") -> None:
+        """Connect the given room in the given direction."""
+        if not isinstance(room, Room):
+            print(self.coord, room.coords)
             raise ValueError(
-                f"neighbour variable {neighbour} passed is not a room")
-        if not self.coord.is_adjacent(neighbour.coord):
-            print(self.coord, neighbour.coord)
+                f"room variable {room} passed is not a room")
+        if not self.coord.is_adjacent(room.coord):
+            print(self.coord, room.coord)
             raise RuntimeError(
-                "neighbour variable passed is not an adjacent room")
+                "room variable passed is not an adjacent room")
 
         # makes assumptions that {direction} of this room is neighbour.
         if direction.is_same(cardinal["NORTH"]):
-            self.set_direction("NORTH", neighbour)
+            self.set_direction("NORTH", room)
         elif direction.is_same(cardinal["SOUTH"]):
-            self.set_direction("SOUTH", neighbour)
+            self.set_direction("SOUTH", room)
         elif direction.is_same(cardinal["EAST"]):
-            self.set_direction("EAST", neighbour)
+            self.set_direction("EAST", room)
         elif direction.is_same(cardinal["WEST"]):
-            self.set_direction("WEST", neighbour)
+            self.set_direction("WEST", room)
         else:
             raise ValueError("Direction passed is not of the right value")
 
@@ -641,6 +642,10 @@ class Room:
         raise ValueError(f"{dir_name!r}: invalid direction")
 
     def connect_to(self, room: "Room") -> None:
+        """Determines the direction of room relative to this room.
+        If given room is adjacent, connect it to this one.
+        Otherwise, raise ValueError.
+        """
         if not self.coord.is_adjacent(room.get_coord()):
             raise ValueError(
                 f"connect_to(), room {room.get_coord()} is not adjacent to this room {self.coord}"
