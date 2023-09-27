@@ -144,7 +144,7 @@ class MUDGame:
             else:
                 print(f"The {creature.name} has dealt {damage} damage on you.")
         if room.creature.isdead():
-            room.set_creature_None()
+            room.creature = None
 
     def isvalid_heal(self, heal_option) -> bool:
         """

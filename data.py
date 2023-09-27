@@ -608,18 +608,6 @@ class Room:
         """Getter method for item attribute"""
         return self.item
 
-    def set_creature(self, creature: "Creature") -> None:
-        """setter method for creature; might not need it"""
-        if self.creature is not None:
-            return None
-        self.creature = creature
-        return None
-
-    def set_item(self, item: "Item") -> None:
-        if self.item is not None:
-            return None
-        self.item = item
-
     def get_direction(self, dir_name: str) -> "Room | None":
         if dir_name in cardinal:
             return self.connected_rooms[dir_name]
