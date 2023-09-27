@@ -64,7 +64,8 @@ LABSIZE = 10  # cannot be too small!!
 
 
 def valid_coords(roomcoords: Coord) -> bool:
-    if roomcoords.x not in list(range(LABSIZE)) or roomcoords.y not in list(range(LABSIZE)):
+    if roomcoords.x not in list(range(LABSIZE)) or roomcoords.y not in list(
+            range(LABSIZE)):
         return False
     return True
 
@@ -121,7 +122,7 @@ class LabyrinthGenerator:
                         this = self.get_room(here)
                         that = self.get_room(there)
                         this.connect_to(direction, that)
- 
+
     def generate_random(self) -> None:
         """Generates the maze by:
         1. Filling in empty rooms in the empty maze
@@ -306,7 +307,7 @@ class LabyrinthGenerator:
                     number_of_unconnected += 1  # counter
         return number_of_unconnected
 
- 
+
 class LabyrinthManager:
     """
     -- ATTRIBUTES --
@@ -434,7 +435,7 @@ class LabyrinthManager:
         if i <= 20:
             print(random.choice(text.clues_noclue))
             return None
-        
+
         r, dirstr = self._r_dir_calc(displacement)
         if r < 3:
             print(random.choice(text.clues_shortrange))
@@ -448,7 +449,7 @@ class LabyrinthManager:
             print(random.choice(text.clues_longrange))
         else:
             print(random.choice(text.clues_distant))
-        
+
         print(text.clues_direction(dirstr))
 
     def _r_dir_calc(self, coord: Coord) -> tuple[float, str]:
@@ -531,15 +532,10 @@ class Room:
         self.is_connected_tostart = False
         self.creature = None
         self.item = None
-        # setting mynorth, mysouth, myeast, mywest status attributes where possible
         self.connected_rooms: "dict[str, Room | None]" = {
             dir_name: None
             for dir_name, dir_coord in cardinal.items()
         }
-        # self.mynorth = None
-        # self.mysouth = None
-        # self.myeast = None
-        # self.mywest = None
 
     def get_coord(self) -> Coord:
         return self.coord
@@ -578,9 +574,7 @@ class Room:
             return
         raise ValueError(f"{dir_name!r}: invalid direction")
 
-    def get_neighbours(
-        self
-    ) -> "list[Room | None]":  # corresponding to N, S, E, W
+    def get_neighbours(self) -> "list[Room | None]":
         """Return a list of rooms in each of the N, S, E, W directions."""
         return list(self.connected_rooms.values())
 
@@ -597,12 +591,10 @@ class Room:
         return False
 
 
-
 FOODITEM = "FOODITEM"
 WEAPONITEM = "WEAPONITEM"
 ARMOURITEM = "ARMOURITEM"
 UTILITYITEM = "UTILITYITEM"
-
 
 
 class Item:
@@ -665,6 +657,7 @@ DEFAULT_HITPOINTS = 50
 
 class Slot:
     """Encapsulates a single inventory slot"""
+
     def __init__(self, item, count: int = 1):
         self.item = item
         self.count = count
@@ -683,6 +676,7 @@ class Slot:
 
 class Inventory:
     """Encapsulates access to a character's inventory"""
+
     def __init__(self):
         self.contents = {}
 
@@ -724,10 +718,8 @@ class Inventory:
         one item in the inventory and its count"""
         contents = []
         for i, slot in enumerate(slots, start=1):
-            contents.append(
-                f"{i:>2}. {slot.count:>2} x {slot.item.name}"
-            )
-        return contents 
+            contents.append(f"{i:>2}. {slot.count:>2} x {slot.item.name}")
+        return contents
 
     def items(self, category: Optional[Type[Item]] = None) -> list[Slot]:
         """Return a list of item slots in inventory of the given type."""
@@ -735,9 +727,10 @@ class Inventory:
             return list(self.contents.values())
         else:
             return [
-            slot for slot in self.contents.values()
-            if isinstance(slot.item, category)
-        ]
+                slot for slot in self.contents.values()
+                if isinstance(slot.item, category)
+            ]
+
 
 class Steve:
     """
@@ -1013,7 +1006,6 @@ def random_item() -> "Item":
     elif item_type == "Weapon":
         item_data = random.choice(weapon_list)
         return Weapon(item_data["name"], item_data["atk"])
-    
 
 
 with open("content/creatures.json", 'r', encoding='utf-8') as f:
