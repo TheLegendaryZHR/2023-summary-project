@@ -576,10 +576,14 @@ class Room:
         self.creature = None
         self.item = None
         # setting mynorth, mysouth, myeast, mywest status attributes where possible
-        self.mynorth = None
-        self.mysouth = None
-        self.myeast = None
-        self.mywest = None
+        self.connected_rooms: "dict[str, Room | None]" = {
+            dir_name: None
+            for dir_name, dir_coord in cardinal.items()
+        }
+        # self.mynorth = None
+        # self.mysouth = None
+        # self.myeast = None
+        # self.mywest = None
 
     def get_coord(self) -> Coord:
         return self.coord
@@ -631,26 +635,16 @@ class Room:
         self.item = item
 
     def get_direction(self, dir_name: str) -> "Room | None":
-        if dir_name == "NORTH":
-            return self.mynorth
-        elif dir_name == "SOUTH":
-            return self.mysouth
-        elif dir_name == "EAST":
-            return self.myeast
-        elif dir_name == "WEST":
-            return self.mywest
+        if dir_name in cardinal:
+            return self.connected_rooms[dir_name]
         raise ValueError(f"{dir_name!r}: invalid direction")
 
     def set_direction(self, dir_name: str, room: "Room") -> None:
         assert isinstance(room, Room)
-        if dir_name == "NORTH":
-            self.mynorth = room
-        elif dir_name == "SOUTH":
-            self.mysouth = room
-        elif dir_name == "EAST":
-            self.myeast = room
-        elif dir_name == "WEST":
-            self.mywest = room
+        if dir_name in cardinal:
+            self.connected_rooms[dir_name] = room
+            return
+        raise ValueError(f"{dir_name!r}: invalid direction")
 
     def connect_to(self, room: "Room") -> None:
         if not self.coord.is_adjacent(room.get_coord()):
