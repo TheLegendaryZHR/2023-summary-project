@@ -596,13 +596,13 @@ class Room:
 
         # makes assumptions that {direction} of this room is neighbour.
         if direction.is_same(cardinal["NORTH"]):
-            self.mynorth = neighbour
+            self.set_north(neighbour)
         elif direction.is_same(cardinal["SOUTH"]):
-            self.mysouth = neighbour
+            self.set_south(neighbour)
         elif direction.is_same(cardinal["EAST"]):
-            self.myeast = neighbour
+            self.set_east(neighbour)
         elif direction.is_same(cardinal["WEST"]):
-            self.mywest = neighbour
+            self.set_west(neighbour)
         else:
             raise ValueError("Direction passed is not of the right value")
 
@@ -610,7 +610,7 @@ class Room:
         """When the creature is killed, removes the creature from the room."""
         self.creature = None
 
-   def get_creature(self) -> "Creature":
+    def get_creature(self) -> "Creature":
         """Getter method for creature attribute"""
         return self.creature
 
@@ -630,6 +630,30 @@ class Room:
             return None
         self.item = item
 
+    def set_north(self, room: "Room") -> None:
+        # Quick validation hack to catch type errors
+        # Should be replaced with proper validation if necessary
+        assert isinstance(room, Room)
+        self.mynorth = room
+
+    def set_south(self, room: "Room") -> None:
+        # Quick validation hack to catch type errors
+        # Should be replaced with proper validation if necessary
+        assert isinstance(room, Room)
+        self.mysouth = room
+
+    def set_east(self, room: "Room") -> None:
+        # Quick validation hack to catch type errors
+        # Should be replaced with proper validation if necessary
+        assert isinstance(room, Room)
+        self.myeast = room
+
+    def set_west(self, room: "Room") -> None:
+        # Quick validation hack to catch type errors
+        # Should be replaced with proper validation if necessary
+        assert isinstance(room, Room)
+        self.mywest = room
+
     def connect_to(self, room: "Room") -> None:
         if not self.coord.is_adjacent(room.get_coord()):
             raise ValueError(
@@ -641,25 +665,25 @@ class Room:
                 raise ValueError(
                     f'Room {self.coord} has no room to the north of it, access cannot be set.'
                 )
-            self.mynorth = room
+            self.set_north(room)
         elif diff == cardinal["SOUTH"]:
             if self.mysouth is None:
                 raise ValueError(
                     f'Room {self.coord} has no room to the south of it, access cannot be set.'
                 )
-            self.mysouth = room
+            self.set_south(room)
         elif diff == cardinal["EAST"]:
             if self.myeast is None:
                 raise ValueError(
                     f'Room {self.coord} has no room to the east of it, access cannot be set.'
                 )
-            self.myeast = room
+            self.set_east(room)
         elif diff == cardinal["WEST"]:
             if self.mywest is None:
                 raise ValueError(
                     f'Room {self.coord} has no room to the west of it, access cannot be set.'
                 )
-            self.mywest = room
+            self.set_west(room)
         else:
             raise ValueError(
                 f"{self!r} and {room!r} should be adjacent but are not"
