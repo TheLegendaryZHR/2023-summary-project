@@ -57,3 +57,17 @@ creeper_dodge_success = "Luckily, your quick reactions allowed you to avoid the 
 creeper_dodge_failure = "Oh no! You took the wrong action and got caught in the blast!"
 
 creeper_dodge_slow = "Oh no! You were too slow and got caught in the blast!"
+
+clues_noclue = [
+    "The warmth of the torch comforts you.",
+    "There was dead silence, so silent you hear your heart tremble.",
+    "A silent whine was heard in the distance. It might just be any creature out there.",
+]
+
+clues_shortrange = [
+    "The torches suddenly blew out without wind, leaving you in darkness. A series of intense heartbeats echoed, sending chills down to your spine. The torhces were then relit slowly, perhaps magically.\nYou must be close to the king warden.",
+    "A blood-curdling roar seemed to shake the entire room with it. You flinched with no control over your body.\nYou must be close to the king warden.",
+    "A blood-curdling roar seemed to shake the entire room with it. You flinched with no control over your body.\nYou must be close to the king warden.",
+]
+clues_mediumrange = []
+clues_longrange = []

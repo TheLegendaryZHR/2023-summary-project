@@ -427,35 +427,16 @@ class LabyrinthManager:
         displays a message based on distance and direction.
         """
         displacement = self._sb_xy_distance()
-        if displacement.is_zero(
-        ):  # They are in the same room, a clue doesn't need to be given LOL
+        if displacement.is_zero():
+            # They are in the same room, a clue doesn't need to be given LOL
             return None
         i = random.randint(0, 100)
         if i <= 20:
-            i = random.randint(0, 2)
-            if i == 0:
-                print("The warmth of the torch comforts you.")
-            elif i == 1:
-                print(
-                    "There was dead silence, so silent you hear your heart tremble."
-                )
-            else:
-                print(
-                    "A silent whine was heard in the distance. It might just be any creature out there."
-                )
+            print(random.choice(text.clues_noclue))
             return None
         r, dirstr = self._r_dir_calc(displacement)
         if r < 3:
-            i = random.randint(0, 2)
-            if i == 0:
-                print(
-                    "The torches suddenly blew out without wind, leaving you in darkness. A series of intense heartbeats echoed, sending chills down to your spine. The torhces were then relit slowly, perhaps magically."
-                )
-            else:
-                print(
-                    "A blood-curdling roar seemed to shake the entire room with it. You flinched with no control over your body."
-                )
-            print("You must be close to the king warden.")
+            print(random.choice(text.clues_shortrange))
         elif r < 6:
             i = random.randint(1, 100)
             if i == 1:
