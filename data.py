@@ -666,19 +666,18 @@ class Item:
     -- METHODS --
     """
 
-    def __init__(self, name, item_type):
+    def __init__(self, name: str):
         self.name = name
-        self.item_type = item_type
 
     def __str__(self) -> str:
-        outputstr = f"Name: {self.name}\nType: {self.item_type}"
+        outputstr = f"Name: {self.name}\nType: {self.__class__.__name__}"
         return outputstr
 
 
 class Food(Item):
 
-    def __init__(self, name, item_type, hprestore):
-        super().__init__(name, item_type)
+    def __init__(self, name: str, hprestore: int):
+        super().__init__(name)
         self.hprestore = hprestore
 
     def __str__(self):
@@ -690,8 +689,8 @@ class Food(Item):
 
 class Armor(Item):
 
-    def __init__(self, name, item_type, defence, armor_slot):
-        super().__init__(name, item_type)
+    def __init__(self, name: str, defence: int, armor_slot: int):
+        super().__init__(name)
         self.defence = defence
         self.armor_slot = armor_slot
 
@@ -704,8 +703,8 @@ class Armor(Item):
 
 class Weapon(Item):
 
-    def __init__(self, name, item_type, attack):
-        super().__init__(name, item_type)
+    def __init__(self, name: str, attack: int):
+        super().__init__(name)
         self.attack = attack
 
     def __str__(self):
@@ -1003,14 +1002,15 @@ def random_item() -> "Item":
     item_type = random.choice(item_type_list)
     if item_type == "Armor":
         item_data = random.choice(armor_list)
-        return Armor(item_data["name"], item_type, item_data["defence"],
+        return Armor(item_data["name"], item_data["defence"],
                      item_data["slot"])
     elif item_type == "Food":
         item_data = random.choice(food_list)
-        return Food(item_data["name"], item_type, item_data["hprestore"])
+        return Food(item_data["name"], item_data["hprestore"])
     elif item_type == "Weapon":
         item_data = random.choice(weapon_list)
-        return Weapon(item_data["name"], item_type, item_data["atk"])
+        return Weapon(item_data["name"], item_data["atk"])
+    
 
 
 with open("content/creatures.json", 'r', encoding='utf-8') as f:
