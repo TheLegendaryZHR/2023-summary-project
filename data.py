@@ -182,7 +182,6 @@ class LabyrinthGenerator:
         nm = [n, m]
         random.shuffle(nm)
         steve_coord = Coord(nm[0], nm[1])
-        self.get_room(steve_coord).settype_startroom()
         self.steve_pos = steve_coord
 
         # choose position of Monster room opposite to where steve is
