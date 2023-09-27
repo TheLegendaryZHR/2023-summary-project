@@ -788,7 +788,7 @@ class Steve:
             raise RuntimeError(
                 f"{fooditem} cannot be consumed as Steve's inventory does not have it."
             )
-        if not fooditem.item_type == "Food":
+        if not isinstance(fooditem, Food):
             raise ValueError(
                 f"{fooditem} cannot be consumed as it is not food.")
         # consumption

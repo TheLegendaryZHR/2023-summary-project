@@ -292,12 +292,12 @@ class MUDGame:
                 coord = self.maze.get_current_pos()
                 room = self.maze.get_room(coord)
                 item = room.get_item()
-                if item.item_type == 'Weapon':
+                if isinstance(item, data.Weapon):
                     self.steve.equip_weapon(item)
                     print(
                         f'You have found a stronger weapon! It deals {item.get_attack()} damage now!'
                     )
-                elif item.item_type == 'Armor':
+                elif isinstance(item, data.Armor):
                     self.steve.equip_armour(item)
                     print(
                         f'You have found a stronger armor! It blocks {item.get_defence()} damage now!'
