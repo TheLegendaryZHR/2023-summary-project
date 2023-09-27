@@ -552,13 +552,11 @@ class Room:
     + coord: Coord
     + type: dict
     + connected: bool
-    - mynorth: dict
-    - mysouth: dict
-    - myeast: dict
-    - mywest: dict
-
+    - connected_rooms: dict
     
     -- METHODS --
+    + get_direction(direction: str) -> Room
+    + set_direction(direction: str, room: Room) -> None
     + settype_startroom(self) -> None
     + steve_leaves(self) -> None
     + steve_enters -> None
