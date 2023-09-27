@@ -675,16 +675,17 @@ class Room:
                 f"{self!r} and {room!r} should be adjacent but are not"
             )
 
-    def get_neighbours_statuses(
+    def get_neighbours(
         self
     ) -> "list[Room | None]":  # corresponding to N, S, E, W
-        return [self.get_direction("NORTH"), self.get_direction("SOUTH"), self.get_direction("EAST"), self.get_direction("WEST")]
+        """Return a list of rooms in each of the N, S, E, W directions."""
+        return list(self.connected_rooms.values())
 
     def get_neighbours_accessibility(self) -> list[bool]:
-        outputlist = []
-        for direction in cardinal.values():
-            outputlist.append(self.dir_is_accessible(direction))
-        return outputlist  # e.g. [False, True, True, False] according to N, S, E, W
+        """Return a list of bools, representing the presence of
+        a room in each of the N, S, E, W directions.
+        """
+        return [bool(room) for room in self.connected_rooms.values()]
 
     def dir_is_accessible(self, direction: Coord) -> bool:
         if direction == cardinal["NORTH"]:
