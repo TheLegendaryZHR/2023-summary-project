@@ -114,13 +114,13 @@ class LabyrinthGenerator:
         """
         for x in range(LABSIZE):
             for y in range(LABSIZE):
-                coord = Coord(x, y)
-                this = self.get_room(coord)
-                for direction in cardinal.values():
-                    neighbour = coord.add(direction)
-                    if valid_coords(neighbour):
-                        neighbour = self.get_room(neighbour)
-                        this.connect_dir(direction, neighbour)
+                here = Coord(x, y)
+                for direction in cardinal:
+                    there = here.add(cardinal[direction])
+                    if valid_coords(there):
+                        this = self.get_room(here)
+                        that = self.get_room(there)
+                        this.connect_to(direction, that)
  
     def generate_random(self) -> None:
         """Generates the maze by:
@@ -586,28 +586,19 @@ class Room:
     def get_coord(self) -> Coord:
         return self.coord
 
-    def connect_dir(self, direction: Coord, room: "Room") -> None:
-        """Connect the given room in the given direction."""
-        if not isinstance(room, Room):
-            print(self.coord, room.coords)
-            raise ValueError(
-                f"room variable {room} passed is not a room")
-        if not self.coord.is_adjacent(room.coord):
-            print(self.coord, room.coord)
-            raise RuntimeError(
-                "room variable passed is not an adjacent room")
-
+    def connect_to(self, direction: str, room: "Room") -> None:
+        """Connect the given room in the given direction.
+        The given room must be validated for adjacency before calling this method.
+        """
+        # We use quick-and-dirty validation for errors we do not expect
+        # such as those due to programmer error
+        # When validating user input or other errors which might be caused by the user,
+        # We give more detailed error messages to aid in handling the error.
+        assert isinstance(room, Room)
+        assert self.coord.is_adjacent(room.coord)
+        assert direction in cardinal
         # makes assumptions that {direction} of this room is neighbour.
-        if direction.is_same(cardinal["NORTH"]):
-            self.set_direction("NORTH", room)
-        elif direction.is_same(cardinal["SOUTH"]):
-            self.set_direction("SOUTH", room)
-        elif direction.is_same(cardinal["EAST"]):
-            self.set_direction("EAST", room)
-        elif direction.is_same(cardinal["WEST"]):
-            self.set_direction("WEST", room)
-        else:
-            raise ValueError("Direction passed is not of the right value")
+        self.set_direction(direction, room)
 
     def get_creature(self) -> "Creature":
         """Getter method for creature attribute"""
@@ -640,45 +631,6 @@ class Room:
             self.connected_rooms[dir_name] = room
             return
         raise ValueError(f"{dir_name!r}: invalid direction")
-
-    def connect_to(self, room: "Room") -> None:
-        """Determines the direction of room relative to this room.
-        If given room is adjacent, connect it to this one.
-        Otherwise, raise ValueError.
-        """
-        if not self.coord.is_adjacent(room.get_coord()):
-            raise ValueError(
-                f"connect_to(), room {room.get_coord()} is not adjacent to this room {self.coord}"
-            )
-        diff = self.coord.direction_of(room.get_coord())
-        if diff == cardinal["NORTH"]:
-            if not self.get_direction("NORTH"):
-                raise ValueError(
-                    f'Room {self.coord} has no room to the north of it, access cannot be set.'
-                )
-            self.set_direction("NORTH", room)
-        elif diff == cardinal["SOUTH"]:
-            if not self.get_direction("SOUTH"):
-                raise ValueError(
-                    f'Room {self.coord} has no room to the south of it, access cannot be set.'
-                )
-            self.set_direction("SOUTH", room)
-        elif diff == cardinal["EAST"]:
-            if not self.get_direction("EAST"):
-                raise ValueError(
-                    f'Room {self.coord} has no room to the east of it, access cannot be set.'
-                )
-            self.set_direction("EAST", room)
-        elif diff == cardinal["WEST"]:
-            if not self.get_direction("WEST"):
-                raise ValueError(
-                    f'Room {self.coord} has no room to the west of it, access cannot be set.'
-                )
-            self.set_direction("WEST", room)
-        else:
-            raise ValueError(
-                f"{self!r} and {room!r} should be adjacent but are not"
-            )
 
     def get_neighbours(
         self
