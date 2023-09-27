@@ -189,10 +189,7 @@ class LabyrinthGenerator:
         boss_y = LABSIZE - 1 - (steve_coord.y % LABSIZE)
         boss_coord = Coord(boss_x, boss_y)
         self.boss_pos = boss_coord
-        if boss_coord.is_same(
-                steve_coord):  # if they happen to be placed in the same room
-            raise ValueError(
-                "Steve and the Boss have been put at the same location.")
+        assert not boss_coord.is_same(steve_coord)
 
     def _generate_maze(self, startroom_pos: Coord) -> None:
         """Links up all rooms in a maze-like fashion"""
@@ -255,10 +252,7 @@ class LabyrinthGenerator:
         """
         # current room should already be connected
         thisroom = self.get_room(thisroomcoords)  # object thisroom object
-        if not thisroom.is_connected_tostart:
-            raise ValueError(
-                "Room that is trying to (recursively) link to others is not yet connected, should not happen."
-            )
+        assert thisroom.is_connected_tostart
         # iteration through N, S, E, W:
         # checking whether they are linkable by rules
         # if linkable, there is a chance of linking
@@ -278,18 +272,9 @@ class LabyrinthGenerator:
     def _generate_link_rooms(self, room1coords: Coord,
                              room2coords: Coord) -> None:
         # validation
-        if not valid_coords(room1coords) or not valid_coords(room2coords):
-            raise IndexError(
-                "_generate_link_rooms(): a room passed in has coords outside of labyrinth. Cannot be linked."
-            )
-        if room1coords.is_same(room2coords):
-            raise IndexError(
-                "_generate_link_rooms(): the same room is passed twice, cannot be linked."
-            )
-        if not room1coords.is_adjacent(room2coords):
-            raise IndexError(
-                "_generate_link_rooms(): non adjacent rooms are passed, cannot be linked."
-            )
+        assert valid_coords(room1coords) and valid_coords(room2coords)
+        assert not room1coords.is_same(room2coords)
+        assert room1coords.is_adjacent(room2coords)
         # linking rooms
         room1 = self.get_room(room1coords)
         room2 = self.get_room(room2coords)
@@ -416,10 +401,7 @@ class LabyrinthManager:
         )
 
     def move_steve(self, direction: Coord) -> None:
-        if not self.can_move_here(self.steve_pos, direction):
-            raise ValueError(
-                "move_steve() attempted to move steve to a direction that is not possible."
-            )
+        assert self.can_move_here(self.steve_pos, direction)
         self.steve_pos = self.steve_pos.add(direction)
 
     def can_move_here(self, this_coords: Coord, direction: Coord) -> bool:
@@ -428,8 +410,7 @@ class LabyrinthManager:
         1. There is no wall between this room and the neighbour.
         2. the coordinates are within the range of valid coordinates.
         """
-        if not valid_coords(this_coords):  # this should not happen at all
-            raise IndexError("entity is not inside of maze")
+        assert valid_coords(this_coords)
         thisroom = self.get_room(this_coords)
         return thisroom.dir_is_accessible(direction)
 
@@ -535,9 +516,7 @@ class LabyrinthManager:
             i += 1
             lowerbound += PI / 4
             upperbound += PI / 4
-        if dirstr is None:
-            raise RuntimeError(
-                "Person who implemented _r_dir_calc() has a skill issue")
+        assert dirstr is not None
         return r, dirstr
 
     def _sb_xy_distance(self) -> Coord:
@@ -635,9 +614,7 @@ class Room:
         for dir_name, dir_coord in cardinal.items():
             if direction == dir_coord:
                 return bool(self.get_direction(dir_name))
-        raise ValueError(
-            "argument passed into dir_is_accessible() should be a direction value."
-        )
+        return False
 
 
 
@@ -645,6 +622,7 @@ FOODITEM = "FOODITEM"
 WEAPONITEM = "WEAPONITEM"
 ARMOURITEM = "ARMOURITEM"
 UTILITYITEM = "UTILITYITEM"
+
 
 
 class Item:
@@ -846,13 +824,8 @@ class Steve:
     def eat(self, foodindex: int) -> None:
         fooditem = self._inventory[foodindex]["item"]
         #validation
-        if foodindex < 0:
-            raise RuntimeError(
-                f"{fooditem} cannot be consumed as Steve's inventory does not have it."
-            )
-        if not isinstance(fooditem, Food):
-            raise ValueError(
-                f"{fooditem} cannot be consumed as it is not food.")
+        assert foodindex >= 0
+        assert isinstance(fooditem, Food)
         # consumption
         self.remove_item_from_inv(foodindex)
         self.heal_health(fooditem.hprestore)
@@ -865,10 +838,7 @@ class Steve:
         return -1  # return value is -1 when not found.
 
     def remove_item_from_inv(self, index) -> None:
-        if index not in list(range(len(self._inventory))):
-            raise ValueError(
-                "Item that is trying to be removed from inventory has an index outside of the range of Steve's inventory."
-            )
+        assert index in range(self.inventory.length())
         if self._inventory[index][
                 "number"] == 1:  # Steve has only 1 of this such item left
             self._inventory.pop(index)
