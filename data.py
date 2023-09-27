@@ -209,7 +209,7 @@ class LabyrinthGenerator:
                 for y in range(LABSIZE):
                     coord = Coord(x, y)
                     room = self.get_room(coord)
-                    if not room.is_connected_tostart():
+                    if not room.is_connected_tostart:
                         self._generate_force_connect(coord)
             unconnected = self._generate_count_unconnected_rooms()
 
@@ -236,7 +236,7 @@ class LabyrinthGenerator:
         if not valid_coords(roomcoords):
             return False
         room_object = self.get_room(roomcoords)
-        if room_object.is_connected_tostart():  # has access
+        if room_object.is_connected_tostart:  # has access
             return False
         return True
 
@@ -256,7 +256,7 @@ class LabyrinthGenerator:
         """
         # current room should already be connected
         thisroom = self.get_room(thisroomcoords)  # object thisroom object
-        if not thisroom.is_connected_tostart():
+        if not thisroom.is_connected_tostart:
             raise ValueError(
                 "Room that is trying to (recursively) link to others is not yet connected, should not happen."
             )
@@ -294,11 +294,10 @@ class LabyrinthGenerator:
         # linking rooms
         room1 = self.get_room(room1coords)
         room2 = self.get_room(room2coords)
-        if room1.is_connected_tostart() or room2.is_connected_tostart():
-            room1.set_connected_True()
-            room2.set_connected_True()
-        if not room1.is_connected_tostart() and not room2.is_connected_tostart(
-        ):
+        if room1.is_connected_tostart or room2.is_connected_tostart:
+            room1.is_connected_tostart = True
+            room2.is_connected_tostart = True
+        if not room1.is_connected_tostart and not room2.is_connected_tostart:
             # every linking must happen between rooms of which 1 MUST be connected.
             return None  # no linking done if both are unconnected.
         # print(room1.coords) #xyzxyz
@@ -319,7 +318,7 @@ class LabyrinthGenerator:
         for column in self.lab:
             for room in column:
                 # room is an instance of the Room class
-                if not room.is_connected_tostart():
+                if not room.is_connected_tostart:
                     number_of_unconnected += 1  # counter
         return number_of_unconnected
 
@@ -573,7 +572,7 @@ class Room:
         self.coord = coord
         self.cleared = False
         self.type = {"startroom?": False, "steve?": False, "boss?": False}
-        self.connected = False
+        self.is_connected_tostart = False
         self.creature = None
         self.item = None
         # setting mynorth, mysouth, myeast, mywest status attributes where possible
@@ -611,11 +610,7 @@ class Room:
         """When the creature is killed, removes the creature from the room."""
         self.creature = None
 
-    def set_connected_True(self) -> None:
-        """Setter method for connected attribute"""
-        self.connected = True
-
-    def get_creature(self) -> "Creature":
+   def get_creature(self) -> "Creature":
         """Getter method for creature attribute"""
         return self.creature
 
@@ -671,7 +666,7 @@ class Room:
             )
 
     def is_connected_tostart(self) -> bool:
-        return self.connected
+        return self.is_connected_tostart
 
     def get_neighbours_statuses(
         self
