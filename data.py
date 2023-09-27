@@ -662,7 +662,7 @@ class Room:
             self.mywest = room
         else:
             raise ValueError(
-                f'Room {self.coord} set_access() had argument passed that is not a direction value.'
+                f"{self!r} and {room!r} should be adjacent but are not"
             )
 
     def is_connected_tostart(self) -> bool:
