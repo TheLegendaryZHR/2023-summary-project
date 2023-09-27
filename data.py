@@ -630,6 +630,18 @@ class Room:
             return None
         self.item = item
 
+    def get_north(self) -> "Room | None":
+        return self.mynorth
+
+    def get_south(self) -> "Room | None":
+        return self.mysouth
+
+    def get_east(self) -> "Room | None":
+        return self.myeast
+
+    def get_west(self) -> "Room | None":
+        return self.mywest
+
     def set_north(self, room: "Room") -> None:
         # Quick validation hack to catch type errors
         # Should be replaced with proper validation if necessary
