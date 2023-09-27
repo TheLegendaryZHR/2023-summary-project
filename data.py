@@ -880,16 +880,16 @@ class Creature:
     def __str__(self):
         return f"Name: {self.name}, HP:{self.hitpoints}/{self.maxhp}"
 
-    def _generate_maxhp(self, maxhp: int, turn_number: int) -> None:
+    def _generate_maxhp(self, maxhp: int, turn_number: int) -> int:
         maxhp = int(
             (maxhp * ((turn_number / 10) + 1) * random.randint(90, 110) / 100))
         return maxhp
 
-    def get_name(self) -> None:
+    def get_name(self) -> str:
         """Returns the name of the creature"""
         return self.name
 
-    def _generate_attack(self, attack: int, turn_number: int) -> None:
+    def _generate_attack(self, attack: int, turn_number: int) -> int:
         """"""
         attack = int((attack) * ((turn_number / 10) + 1) *
                      (random.randint(90, 110) / 100))
@@ -925,7 +925,7 @@ class Creature:
 
 class Creeper(Creature):
 
-    def _generate_attack(self, attack: int, turn_number: int):
+    def _generate_attack(self, attack: int, turn_number: int) -> int:
         random_letter = random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         print(
             "AHHHHHHH A CREEPER HAS APPEARED!!!! RUN AWAY QUICK BY\n PRESSING THE FOLLOWING LETTER:"
