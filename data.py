@@ -652,42 +652,6 @@ class Room:
         elif dir_name == "WEST":
             self.mywest = room
 
-    def get_north(self) -> "Room | None":
-        return self.mynorth
-
-    def get_south(self) -> "Room | None":
-        return self.mysouth
-
-    def get_east(self) -> "Room | None":
-        return self.myeast
-
-    def get_west(self) -> "Room | None":
-        return self.mywest
-
-    def set_north(self, room: "Room") -> None:
-        # Quick validation hack to catch type errors
-        # Should be replaced with proper validation if necessary
-        assert isinstance(room, Room)
-        self.mynorth = room
-
-    def set_south(self, room: "Room") -> None:
-        # Quick validation hack to catch type errors
-        # Should be replaced with proper validation if necessary
-        assert isinstance(room, Room)
-        self.mysouth = room
-
-    def set_east(self, room: "Room") -> None:
-        # Quick validation hack to catch type errors
-        # Should be replaced with proper validation if necessary
-        assert isinstance(room, Room)
-        self.myeast = room
-
-    def set_west(self, room: "Room") -> None:
-        # Quick validation hack to catch type errors
-        # Should be replaced with proper validation if necessary
-        assert isinstance(room, Room)
-        self.mywest = room
-
     def connect_to(self, room: "Room") -> None:
         if not self.coord.is_adjacent(room.get_coord()):
             raise ValueError(
