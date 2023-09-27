@@ -631,11 +631,11 @@ class Room:
         self.item = item
 
     def set_access(self, room: "Room") -> None:
-        diff = self.coord.direction_of(room.get_coord())
-        if self.coord.is_adjacent(room.get_coord()):
+        if not self.coord.is_adjacent(room.get_coord()):
             raise ValueError(
                 f"set_access(), room {room.get_coord()} is not adjacent to this room {self.coord}"
             )
+        diff = self.coord.direction_of(room.get_coord())
         if diff == cardinal["NORTH"]:
             if self.mynorth is None:
                 raise ValueError(
