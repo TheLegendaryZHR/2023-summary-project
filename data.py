@@ -302,8 +302,8 @@ class LabyrinthGenerator:
             return None  # no linking done if both are unconnected.
         # print(room1.coords) #xyzxyz
         # print(room2.coords) #xyzxyz
-        room1.set_access(room2)
-        room2.set_access(room1)
+        room1.connect_to(room2)
+        room2.connect_to(room1)
 
     def _generate_count_unconnected_rooms(self) -> int:
         """
@@ -630,10 +630,10 @@ class Room:
             return None
         self.item = item
 
-    def set_access(self, room: "Room") -> None:
+    def connect_to(self, room: "Room") -> None:
         if not self.coord.is_adjacent(room.get_coord()):
             raise ValueError(
-                f"set_access(), room {room.get_coord()} is not adjacent to this room {self.coord}"
+                f"connect_to(), room {room.get_coord()} is not adjacent to this room {self.coord}"
             )
         diff = self.coord.direction_of(room.get_coord())
         if diff == cardinal["NORTH"]:
