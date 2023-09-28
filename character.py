@@ -103,17 +103,16 @@ class Steve:
 
     def __init__(self, name: str, health: int, base_damage: int):
         self.inventory = Inventory()
-        self._inventory = []  # list of dict
-        # each dict in self.inventory describes an item, as well as the number of it in the inventory.
-        # e.g. {"item": Health_Potion, "number": 2}
-        # There should NOT be duplicate dicts in self.inventory e.g. 2 different dicts in self.inventory with "item" being Health_Potions
         self.name = name
-        self.armor = {}
-        for slot in ["helmet", "chestplate", "leggings", "boots"]:
-            self.armor[slot] = None
         self.health = health
-        self.weapon = None
         self.base_damage = base_damage
+        self.armor = {
+            "helmet": None,
+            "chestplate": None,
+            "leggings": None,
+            "boots": None,
+        }
+        self.weapon = None
 
     def __str__(self):
         return f"Steve has {self.health} HP."
