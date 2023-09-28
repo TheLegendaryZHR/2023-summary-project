@@ -346,19 +346,20 @@ class MUDGame:
                     print(text.battle_hp_report(creature.get_name(), creature.get_health()))
                 elif choice == '2':
                     #heal
-                    heal_option = None
-                    n = 0
-                    while not self.isvalid_heal(heal_option):
-                        n += 1
-                        if self.steve.inventory.is_empty():
-                            print(text.inventory_empty + "\n")
-                        else:
-                            print("\nYou have:\n")
-                            self.steve.display_inventory()
-                        if n > 1:
-                            self.invalid_opt()
-                        heal_option = input(text.heal_prompt)
-                        self.isvalid_heal(heal_option)
+                    if self.steve.inventory.is_empty():
+                        print(text.inventory_empty + "\n")
+                    else:
+                        print("\nYou have:\n")
+                        food_items = [
+                            str(slot.item)
+                            for slot in self.steve.get_food_items()
+                        ]
+                        choice = prompt_valid_choice(
+                            food_items,
+                            text.heal_prompt,
+                            text.option_invalid
+                        )
+                    # Oops, how to get the healing item?
                     heal_option = int(heal_option) - 1
                     prevhp = self.steve.health
                     self.steve.eat(heal_option)

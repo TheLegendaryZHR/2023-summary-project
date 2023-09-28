@@ -17,7 +17,7 @@ def heal_report(healing: int, health: int) -> str:
 def damage_report(damage: int, health: int) -> str:
     return f"You got hurt by {damage} HP and have {health} left."
 
-heal_prompt = 'Please choose a food item: '
+heal_prompt = 'Please choose a food item'
 heal_success = 'Healed!'
 
 def creature_selfheal(name: str) -> str:
