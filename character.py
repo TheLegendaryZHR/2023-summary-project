@@ -196,8 +196,7 @@ class Creature:
     
     -- METHODS --
     + take_damage(dmg: int) -> None
-    get_attack
-    get_health
+    + get_attack() -> int
     """
 
     def __init__(self,
@@ -236,10 +235,6 @@ class Creature:
         """Getter for attack attribute.
         Might not need this"""
         return self.attack
-
-    def get_health(self):
-        """Getter for health attribute"""
-        return self.health
 
     def take_damage(self, damage: int) -> None:
         """Updates health based on the damage the creature suffered"""

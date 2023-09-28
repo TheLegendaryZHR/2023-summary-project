@@ -321,7 +321,51 @@ class MUDGame:
             return True
         return False
 
-    def battle(self) -> None:
+    def handle_heal(self, steve: character.Steve, food: data.Food) -> None:
+        prevhp = steve.health
+        steve.eat(food)
+        print(text.heal_report(
+            steve.health - prevhp,
+            steve.health
+        ))
+        print(text.damage_report(
+            prevhp - steve.health,
+            steve.health
+        ))
+        print(text.heal_success)
+
+    def handle_attack(self, steve: character.Steve, creature: character.Creature) -> int:
+        damage = steve.get_attack()
+        creature.take_damage(damage)
+        print(text.battle_hp_report(
+            creature.name,
+            creature.health
+        ))
+        return damage
+
+    def handle_battle_round(self, steve: character.Steve, creature: character.Creature) -> None:
+        choice = prompt_valid_choice(
+            ["Attack", "Heal"],
+            text.option_prompt,
+            text.option_invalid
+        )
+        if choice == 'Attack':
+            self.handle_attack(steve, creature)
+        elif choice == 'Heal':
+            # self.handle_heal()
+            print("\nYou have:\n")
+            food_items = [
+                slot.item
+                for slot in steve.get_food_items()
+            ]
+            food = prompt_valid_choice(
+                food_items,
+                text.heal_prompt,
+                text.option_invalid
+            )
+            self.handle_heal(steve, food)
+
+    def enter_battle(self) -> None:
         """
         Battle between Steve and creatures.
         Each takes a turn to deal damage or heal.
@@ -330,54 +374,27 @@ class MUDGame:
         """
         room = self.current_room()
         creature = room.creature
-        print(f"You have encountered the {creature.get_name()}!")
+        print(f"You have encountered the {creature.name}!")
         while not self.steve.isdead() and not creature.isdead():
-            print(self.steve)  # show HP
-            if self.steve.inventory.isempty():
+            print(self.steve.status())
+            if self.steve.inventory.is_empty():
                 print(
-                    f'You have no heal items! \nAttack the {creature.get_name()}.'
+                    f'You have no heal items! \nAttack the {creature.name}.'
                 )
-                damage = self.steve.get_attack()
-                creature.take_damage(damage)
-                print(text.battle_hp_report(creature.get_name(), creature.get_health()))
-                if creature.get_health() == 0:
-                    continue
+                self.handle_attack(self.steve, creature)
             else:
-                choice = self.prompt_battle()
-                if choice == '1':
-                    #attack
-                    damage = self.steve.get_attack()
-                    creature.take_damage(damage)
-                    print(text.battle_hp_report(creature.get_name(), creature.get_health()))
-                elif choice == '2':
-                    #heal
-                    if self.steve.inventory.is_empty():
-                        print(text.inventory_empty + "\n")
-                    else:
-                        print("\nYou have:\n")
-                        food_items = [
-                            slot.item
-                            for slot in self.steve.get_food_items()
-                        ]
-                        food_item = prompt_valid_choice(
-                            food_items,
-                            text.heal_prompt,
-                            text.option_invalid
-                        )
-                    prevhp = self.steve.health
-                    self.steve.eat(food_item)
-                    print(text.heal_report(self.steve.health - prevhp, self.steve.health))
-                    print(text.damage_report(prevhp - self.steve.health, self.steve.health))
-                    print(text.heal_success)
+                self.handle_battle_round(self.steve, creature)      
             #Steve endturn
+            if creature.isdead():
+                continue
             action = creature.act()
             damage = action.do()
-            self.steve.take_damage(damage)
-            if damage == 0:
+            if damage:
                 print(text.creature_selfheal(creature.name))
             else:
+                self.steve.take_damage(damage)
                 print(text.creature_dealdmg(creature.name, damage))
-        if room.creature.isdead():
+        if creature.isdead():
             room.creature = None
 
     def isvalid_heal(self, heal_option) -> bool:
@@ -407,7 +424,7 @@ class MUDGame:
 
     def prompt_direction(self) -> str:
         """Prompt player for a valid direction to move."""
-        current_location = self.maze.current_coord()
+        current_location = self.current_coord()
         available_dir = []
         for dir_name, dir_coord in cardinal.items():
             if self.maze.can_move_here(current_location, dir_coord):
