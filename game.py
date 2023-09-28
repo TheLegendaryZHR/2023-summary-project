@@ -37,6 +37,17 @@ def prompt_valid_choice(options: list[str],
         choice = input(question + ": ")
     return choice
 
+def prompt_valid_choice_inline(options: list[str],
+                        question: str,
+                        errormsg: str) -> str:
+    inline_options = "/".join(options)
+    choice = None
+    while choice not in options:
+        if choice is not None:
+            print(errormsg)
+        choice = input(f"{question} ({inline_options}): ")
+    return choice
+
 
 class LabyrinthManager:
     """This class encapsulates access to the labyrinth grid
@@ -284,11 +295,7 @@ class MUDGame:
         Prompt player to choose option 1 or 2.
         Returns 1 or 2.
         """
-        opt = input('Please choose option 1 or 2: ')
-        while not self.isvalid(opt):
-            print('Please enter a valid number(1/2).')
-            opt = input('Please choose option 1 or 2: ')
-        return opt
+        return prompt_valid_choice_inline(["1", "2"], 'Please choose option', 'Please enter a valid number')
 
     def isvalid(self, opt) -> bool:
         """
