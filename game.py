@@ -241,12 +241,6 @@ class MUDGame:
         if self.steve.isdead() or self.boss.isdead():  # other conditions
             return True
 
-    def show_status(self) -> None:
-        """
-        Print status of Steve.
-        """
-        print(self.steve)
-
     def show_options(self, sit: str) -> None:
         """
         Print menu of options provided to users according to different situation.
@@ -443,11 +437,8 @@ class MUDGame:
         # Main game loop
         while not self.game_is_over():
             print('\n')
-            # append the current location to visited
             self.visit(self.maze.get_current_pos)
-
-            # print steve's status
-            self.show_status()
+            print(self.steve.status())
 
             # creature is found in the room
             if self.creature_encountered():

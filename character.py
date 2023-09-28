@@ -115,6 +115,9 @@ class Steve:
         self.weapon = None
 
     def __str__(self):
+        return self.status()
+
+    def status(self) -> str:
         return f"Steve has {self.health} HP."
 
     def display_inventory(self) -> None:
