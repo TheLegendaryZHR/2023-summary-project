@@ -1,4 +1,5 @@
 #File containing the code for the game
+import math
 import random
 
 import data
@@ -12,6 +13,195 @@ WEST = "WEST"
 
 
 LABSIZE = 10
+
+
+PI = 3.14159265359
+
+
+class LabyrinthManager:
+    """
+    -- ATTRIBUTES --
+    - lab: list[list[Room]]
+    - difficulty_level
+    - boss_pos: Coord
+    - steve_pos: Coord
+
+    -- METHODS --
+    + get_room() -> Room
+    + set_room(Room) -> None
+    + layout() -> str
+    + get_current_pos() -> Coord
+    + move_boss(self) -> None
+    + move_steve(self) -> None
+    + can_move_here() -> bool
+   """
+
+    def __init__(self, labyrinth: Maze):
+        self.lab = labyrinth
+        self.difficulty_level = None
+        self.boss_pos = Coord(9, 9)  # Decided upon generation
+        self.steve_pos = Coord(0, 0)  # Decided upon generation
+
+    def get_room(self, coord: Coord) -> "Room":
+        """Returns the room at the given coordinates"""
+        return self.lab.get(coord)
+
+    def set_room(self, coord: Coord, room: "Room") -> None:
+        """Returns the room at the given coordinates"""
+        self.lab.set(coord, room)
+
+    def layout(self) -> str:
+        outputstr = ""
+        for y in range(self.lab.y_size):
+            fulltopstr = ""
+            fullmidstr = ""
+            fullbottomstr = ""
+            for x in range(self.lab.x_size):
+                room = self.get_room(Coord(x, self.lab.y_size - y - 1))
+                N, S, E, W = room.get_neighbours()
+                topstr = " || " if N else "    "
+                bottomstr = " || " if S else "    "
+                midstr = "=" if W else " "
+                if room.steve_ishere():
+                    midstr += "S"
+                else:
+                    midstr += "/"
+                if room.boss_ishere():
+                    midstr += "B"
+                else:
+                    midstr += "/"
+                if E:
+                    midstr += "="
+                else:
+                    midstr += " "
+                fulltopstr += topstr
+                fullmidstr += midstr
+                fullbottomstr += bottomstr
+            outputstr += fulltopstr + "\n" + fullmidstr + "\n" + fullbottomstr + "\n"
+        return outputstr
+
+    def get_current_pos(self) -> Coord:
+        """Tells the coordinates of Steve's current location."""
+        return self.steve_pos
+
+    def move_boss(self) -> None:
+        """Tries to move the boss from its current room to any (available) neighbour rooms.
+        
+        Does not jump over walls.
+        If the boss cannot move in any of the 4 cardinal directions, an error is raised as it implies that the room it is in is completely isolated, which should not happen.
+        """
+        directions = list(cardinal.values())
+        random.shuffle(directions)
+        for direction in directions:
+            if self.can_move_here(self.boss_pos, direction):
+                self.boss_pos = self.boss_pos.add(direction)
+                return None
+        raise RuntimeError(
+            f"Boss cannot move because its room {self.boss_pos} is unlinked to neighbours."
+        )
+
+    def move_steve(self, direction: Coord) -> None:
+        assert self.can_move_here(self.steve_pos, direction)
+        self.steve_pos = self.steve_pos.add(direction)
+
+    def can_move_here(self, this_coords: Coord, direction: Coord) -> bool:
+        """Tells whether an adjacent room is accessible.
+        Rules:
+        1. There is no wall between this room and the neighbour.
+        2. the coordinates are within the range of valid coordinates.
+        """
+        assert self.lab.valid_coords(this_coords)
+        thisroom = self.get_room(this_coords)
+        return thisroom.dir_is_accessible(direction)
+
+    def _steve_useitem(self, item) -> None:
+        """Uses a utility item. Not implemented because no utility items are implemented yet."""
+        raise NotImplementedError
+
+    def _give_sound_clue(self):
+        """Displays a message giving a hint how far away the boss is from steve
+        and which direction steve might have to go in order to find the boss.
+        
+        Calculates straight line distance.
+        Calculates which direction, N, S, E, W, NE, NW, SE, SW
+        displays a message based on distance and direction.
+        """
+        displacement = self._sb_xy_distance()
+        if displacement.is_zero():
+            # They are in the same room, a clue doesn't need to be given LOL
+            return None
+        i = random.randint(0, 100)
+        if i <= 20:
+            print(random.choice(text.clues_noclue))
+            return None
+
+        r, dirstr = self._r_dir_calc(displacement)
+        if r < 3:
+            print(random.choice(text.clues_shortrange))
+        elif r < 6:
+            i = random.randint(1, 100)
+            if i == 1:
+                print(text.easter_egg)
+            else:
+                print(random.choice(text.clues_mediumrange))
+        elif r < 10:
+            print(random.choice(text.clues_longrange))
+        else:
+            print(random.choice(text.clues_distant))
+
+        print(text.clues_direction(dirstr))
+
+    def _r_dir_calc(self, coord: Coord) -> tuple[float, str]:
+        """maths work for _give_sound_clue
+        Finds r and theta using x and y (polar coordinates system)
+        returns r and direction
+        """
+        displacement = self._sb_xy_distance()
+        if displacement.is_zero():
+            return None
+        r = math.sqrt((coord.x**2) + (coord.y**2))  # Pythagorean theorem
+        basic = abs(math.atan(coord.y / coord.x))
+        if coord.y > 0:
+            if coord.x > 0:
+                theta = basic  # 1st quadrant
+            elif coord.x < 0:
+                theta = PI - basic  # 2nd quadrant
+            else:
+                theta = PI / 2  # up
+        elif coord.y < 0:
+            if coord.x < 0:
+                theta = PI + basic  # 3rd quadrant
+            elif coord.x > 0:
+                theta = 2 * PI - basic  # 4th quadrant
+            else:
+                theta = 3 * PI / 2  # down
+        elif coord.y == 0:
+            if coord.x > 0:
+                theta = 0  # right
+            if coord.x < 0:
+                theta = PI  # left
+        dirstr = None
+        dirstrlist = [
+            "EAST", "NORTHEAST", "NORTH", "NORTHWEST", "WEST", "SOUTHWEST",
+            "SOUTH", "SOUTHEAST"
+        ]
+        if theta <= PI / 8 or theta > 15 * PI / 8:
+            dirstr = dirstrlist[0]
+        lowerbound = PI / 8
+        upperbound = lowerbound + PI / 4
+        i = 1
+        while i <= 7 and dirstr is not None:
+            if i > lowerbound and i <= upperbound:
+                dirstr = dirstrlist[i]
+            i += 1
+            lowerbound += PI / 4
+            upperbound += PI / 4
+        assert dirstr is not None
+        return r, dirstr
+
+    def _sb_xy_distance(self) -> Coord:
+        """returns x, y displacement of boss from steve."""
+        return self.steve_pos.direction_of(self.boss_pos)
 
 
 class MUDGame:
