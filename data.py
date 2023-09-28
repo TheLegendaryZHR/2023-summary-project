@@ -23,7 +23,7 @@ class Item:
         self.name = name
 
     def __str__(self) -> str:
-        outputstr = f"Name: {self.name}\nType: {self.__class__.__name__}"
+        outputstr = f"{self.name} [{self.__class__.__name__}]"
         return outputstr
 
 
@@ -34,7 +34,7 @@ class Food(Item):
         self.hprestore = hprestore
 
     def __str__(self):
-        return super().__str__() + f"\nRestores: {self.hprestore} HP"
+        return super().__str__() + f": restores {self.hprestore} HP"
 
     def get_restore(self):
         return self.hprestore
@@ -48,7 +48,7 @@ class Armor(Item):
         self.armor_slot = armor_slot
 
     def __str__(self):
-        return super().__str__() + f"\nProvides: {self.defence} defence"
+        return super().__str__() + f": provides {self.defence} defence"
 
     def get_defence(self):
         return self.defence
@@ -61,7 +61,7 @@ class Weapon(Item):
         self.attack = attack
 
     def __str__(self):
-        return super().__str__() + f"\nDoes: {self.attack} damage"
+        return super().__str__() + f": deals {self.attack} damage"
 
     def get_attack(self):
         return self.attack
