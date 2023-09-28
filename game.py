@@ -1,6 +1,7 @@
 #File containing the code for the game
 import math
 import random
+from typing import Any
 
 import character
 import create
@@ -25,18 +26,22 @@ LABSIZE = 10
 PI = 3.14159265359
 
 
-def prompt_valid_choice(options: list[str],
+def prompt_valid_choice(options: list[Any],
                         question: str,
-                        errormsg: str) -> str:
+                        errormsg: str) -> Any:
+    """Prompt the user for a valid choice from enumerated options.
+    Return the option corresponding to the choice.
+    """
     for i, option in enumerate(options, start=1):
-        print(f"{i}: {option}")
-    choice = None
-    while choice not in options:
-        if choice is not None:
-            print(errormsg)
+        print(f"{i}: {str(option)}")
+    while True:
         choice = input(question + ": ")
-    return choice
-
+        if not choice.isdecimal():
+            print(errormsg)
+        elif not 0 < int(choice) <= len(options):
+            print(errormsg)
+    return options[int(choice) - 1]
+    
 
 class LabyrinthManager:
     """This class encapsulates access to the labyrinth grid
@@ -351,18 +356,16 @@ class MUDGame:
                     else:
                         print("\nYou have:\n")
                         food_items = [
-                            str(slot.item)
+                            slot.item
                             for slot in self.steve.get_food_items()
                         ]
-                        choice = prompt_valid_choice(
+                        food_item = prompt_valid_choice(
                             food_items,
                             text.heal_prompt,
                             text.option_invalid
                         )
-                    # Oops, how to get the healing item?
-                    heal_option = int(heal_option) - 1
                     prevhp = self.steve.health
-                    self.steve.eat(heal_option)
+                    self.steve.eat(food_item)
                     print(text.heal_report(self.steve.health - prevhp, self.steve.health))
                     print(text.damage_report(prevhp - self.steve.health, self.steve.health))
                     print(text.heal_success)
