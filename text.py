@@ -35,8 +35,7 @@ escape_notrequired = 'No creature found in this room.'
 
 option_invalid = 'Please enter a valid option.'
 
-def move_prompt(directions: str) -> str:
-    return 'Where are you going next? ' + directions
+move_prompt = 'Where are you going next?'
 
 def found_item(name: str, effect: str) -> str:
     return f"'You have found a {name}! {effect}"

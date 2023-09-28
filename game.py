@@ -25,6 +25,19 @@ LABSIZE = 10
 PI = 3.14159265359
 
 
+def prompt_valid_choice(options: list[str],
+                        question: str,
+                        errormsg: str) -> str:
+    for option in options:
+        print(option)
+    choice = None
+    while choice not in options:
+        if choice is not None:
+            print(errormsg)
+        choice = input(question + ": ")
+    return choice
+
+
 class LabyrinthManager:
     """This class encapsulates access to the labyrinth grid
     -- ATTRIBUTES --
@@ -376,28 +389,13 @@ class MUDGame:
         """
         current_location = self.maze.current_coord()
         available_dir = []
-        dir_provided = ''
         for dir_name, dir_coord in cardinal.items():
             if self.maze.can_move_here(current_location, dir_coord):
                 available_dir.append(dir_name)
-        for i in range(len(available_dir)):
-            dir_provided = dir_provided + str(
-                i + 1) + '. ' + available_dir[i] + ' '
-        validity = False
-        n = 0
-        while validity is False:
-            n += 1
-            if n > 1:
-                self.invalid_opt()
-            print(text.move_prompt(dir_provided))
-            choice = input('Next location: ')
-            no_of_choice = len(available_dir)
-            valid_choice = ''
-            for i in range(no_of_choice):
-                valid_choice += str(i + 1)
-            if choice in valid_choice and len(choice) == 1:
-                validity = True
-        choice = int(choice)
+        choice = prompt_valid_choice(available_dir,
+                                     text.move_prompt,
+                                     text.option_invalid)
+        return int(choice)
         self.maze.move_steve(cardinal[available_dir[choice - 1]])
 
     def moveboss(self) -> None:
