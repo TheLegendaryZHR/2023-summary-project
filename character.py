@@ -2,7 +2,7 @@ import json
 import random
 from typing import Container, Generic, Optional, Type, TypeVar
 
-from action import Action
+from action import Action, Attack
 import data
 import text
 
@@ -99,18 +99,55 @@ class Inventory(Container[data.Item]):
             ]
 
 
-class Steve:
+class Combatant:
+    """Combatants can engage in combat.
+
+    All characters that can engage in combat
+    must implement the Combatant interface.
+
+    Attributes
+    ----------
+    + name: str
+    + health: int
+    + maxhp: int
+
+    Methods
+    -------
+    + isdead() -> bool
+    + get_attack() -> int
+    + heal(change: int) -> None
+    + take_damage(dmg: int) -> None
+    """
+    def __init__(self, name: str, maxhp: int) -> None:
+        self.name = name
+        self.health = maxhp
+        self.maxhp = maxhp
+
+    def isdead(self) -> bool:
+        return self.health <= 0
+
+    def get_attack(self) -> int:
+        raise NotImplementedError
+
+    def heal(self, change: int) -> None:
+        assert change > 0
+        self.health = min(self.health + change, self.maxhp)
+
+    def take_damage(self, damage: int) -> None:
+        self.health = max(0, self.health - damage)
+    
+
+
+class Steve(Combatant):
     """
     -- ATTRIBUTES --
     
     -- METHODS --
     """
-
     def __init__(self, name: str, maxhp: int, base_damage: int):
+        super().__init__(name, maxhp)
         self.inventory = Inventory()
-        self.name = name
         self.maxhp = maxhp
-        self.health = maxhp
         self.base_damage = base_damage
         self.armor: dict[str, Optional[data.Armor]] = {
             "helmet": None,
@@ -153,10 +190,6 @@ class Steve:
         self.inventory.consume(food)
         self.heal(food.hprestore)
 
-    def heal(self, change: int) -> None:
-        assert change > 0
-        self.health = min(self.health + change, self.maxhp)
-
     def get_defence(self) -> int:
         defence = 0
         for armor in self.armor.values():
@@ -172,31 +205,21 @@ class Steve:
             return self.base_damage
         return self.base_damage + self.weapon.get_attack()
 
-    def isdead(self) -> bool:
-        """Tells whether Steve is dead or not. Returns True if yes, else False."""
-        if self.health <= 0:
-            return True
-        return False
-
     def take_damage(self, damage: int) -> None:
         """Updates health attribute based on how much damage is dealt."""
-        assert isinstance(damage, int)
         damage = int(damage * ((100 - self.get_defence()) / 100))
-        self.health = max(0, self.health - damage)
+        super().take_damage(damage)
 
 
-class Creature:
+class Creature(Combatant):
     """
     -- ATTRIBUTES --
-    + name: str
     + maxhp: int
     + attack: int
-    + health: int
     - actions: list[Action]
     
     -- METHODS --
-    + take_damage(dmg: int) -> None
-    + get_attack() -> int
+    None
     """
 
     def __init__(self,
@@ -204,8 +227,7 @@ class Creature:
                  maxhp: int,
                  attack: int,
                  actions: list[Action]):
-        self.name = name
-        self.maxhp = maxhp
+        super().__init__(name, maxhp)
         self.attack = attack
         self.health = maxhp
         self.actions: dict[str, Action] = {
@@ -221,10 +243,6 @@ class Creature:
             (maxhp * ((turn_number / 10) + 1) * random.randint(90, 110) / 100))
         return maxhp
 
-    def get_name(self) -> str:
-        """Returns the name of the creature"""
-        return self.name
-
     def _generate_attack(self, attack: int, turn_number: int) -> int:
         """"""
         attack = int((attack) * ((turn_number / 10) + 1) *
@@ -232,25 +250,13 @@ class Creature:
         return attack
 
     def get_attack(self):
-        """Getter for attack attribute.
-        Might not need this"""
         return self.attack
 
-    def take_damage(self, damage: int) -> None:
-        """Updates health based on the damage the creature suffered"""
-        self.health = max(0, self.health - damage)
-
-    def act(self, choice: str) -> Action:
+    def act(self) -> Action:
         """Chooses an action from available actions.
         If not overridden, will choose a random action.
         """
-        return random.choice(self.actions)
-
-    def isdead(self) -> bool:
-        """Tells whether Creature is dead or not. Returns True if yes, else False."""
-        if self.health <= 0:
-            return True
-        return False
+        return random.choice(list(self.actions.values()))
 
 
 class HealingCreature(Creature):
@@ -274,7 +280,7 @@ class HealingCreature(Creature):
                 return self.actions["Heal"]
         action = None
         while not isinstance(action, Attack):
-            action = random.choice(self.actions)
+            action = super().act()
         return action
 
 
