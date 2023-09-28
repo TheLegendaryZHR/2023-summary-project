@@ -28,24 +28,13 @@ PI = 3.14159265359
 def prompt_valid_choice(options: list[str],
                         question: str,
                         errormsg: str) -> str:
-    for option in options:
-        print(option)
+    for i, option in enumerate(options, start=1):
+        print(f"{i}: {option}")
     choice = None
     while choice not in options:
         if choice is not None:
             print(errormsg)
         choice = input(question + ": ")
-    return choice
-
-def prompt_valid_choice_inline(options: list[str],
-                        question: str,
-                        errormsg: str) -> str:
-    inline_options = "/".join(options)
-    choice = None
-    while choice not in options:
-        if choice is not None:
-            print(errormsg)
-        choice = input(f"{question} ({inline_options}): ")
     return choice
 
 
@@ -276,6 +265,34 @@ class MUDGame:
         if self.steve.isdead() or self.boss.isdead():  # other conditions
             return True
 
+    def prompt_encounter(self) -> str:
+        return prompt_valid_choice(
+            ["Attack", "Run away"],
+            text.option_prompt,
+            text.option_invalid
+        )
+
+    def prompt_pickup_item(self) -> str:
+        return prompt_valid_choice(
+            ["Pick up", "Do not pick up"],
+            text.option_prompt,
+            text.option_invalid
+        )
+
+    def prompt_restart(self) -> str:
+        return prompt_valid_choice(
+            ["Yes", "No"],
+            text.option_prompt,
+            text.option_invalid
+        )
+
+    def prompt_battle(self) -> str:
+        return prompt_valid_choice(
+            ["Attack", "Heal"],
+            text.option_prompt,
+            text.option_invalid
+        )
+
     def show_options(self, sit: str) -> None:
         """
         Print menu of options provided to users according to different situation.
@@ -321,14 +338,13 @@ class MUDGame:
                 if creature.get_health() == 0:
                     continue
             else:
-                self.show_options('battle')
-                battle_option = int(prompt_valid_choice_inline(["1", "2"], 'Please choose option', 'Please enter a valid number'))
-                if battle_option == '1':
+                choice = self.prompt_battle()
+                if choice == '1':
                     #attack
                     damage = self.steve.get_attack()
                     creature.take_damage(damage)
                     print(text.battle_hp_report(creature.get_name(), creature.get_health()))
-                elif battle_option == '2':
+                elif choice == '2':
                     #heal
                     heal_option = None
                     n = 0
@@ -431,13 +447,8 @@ class MUDGame:
             if self.current_room().creature:
 
                 # show player action options
-                self.show_options('creature')
-
-                # prompt player to take actions
-                option = int(prompt_valid_choice_inline(["1", "2"], 'Please choose option', 'Please enter a valid number'))
-
-                # battle if player choose option 1
-                if option == '1':
+                choice = self.prompt_encounter()
+                if choice == '1':
                     self.battle()
                     if self.game_is_over():
                         continue
@@ -486,9 +497,8 @@ class MUDGame:
                         item.name,
                         "Do you want to pick it up?"
                     ))
-                    self.show_options('item')
-                    item_choice = int(prompt_valid_choice_inline(["1", "2"], 'Please choose option', 'Please enter a valid number'))
-                    if item_choice == '1':
+                    choice = self.prompt_pickup_item()
+                    if choice == '1':
                         self.steve.take_item(item, 1)
             else:
                 print(text.no_item)

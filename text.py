@@ -33,6 +33,7 @@ escape_success = 'You have successfully ran away!'
 escape_failure = "Too late to escape!"
 escape_notrequired = 'No creature found in this room.'
 
+option_prompt = "Choose an option"
 option_invalid = 'Please enter a valid option.'
 
 move_prompt = 'Where are you going next?'
