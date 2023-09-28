@@ -88,8 +88,10 @@ class LabyrinthManager:
         return outputstr
 
     def current_coord(self) -> Coord:
-        """Tells the coordinates of Steve's current location."""
         return self.steve_pos
+
+    def current_room(self) -> Room:
+        return self.lab.get(self.steve_pos)
 
     def move_boss(self) -> None:
         """Tries to move the boss from its current room to any (available) neighbour rooms.
@@ -282,8 +284,7 @@ class MUDGame:
         Only boss and steve are able to heal themselves.
         Battle continues until one dies.
         """
-        coord = self.maze.current_coord()
-        room = self.maze.get_room(coord)
+        room = self.current_room()
         creature = room.get_creature()
         print(f"You have encountered the {creature.get_name()}!")
         while not self.steve.isdead() and not creature.isdead():
@@ -354,8 +355,7 @@ class MUDGame:
         """
         Returns True when creature is found in the room.
         """
-        coord = self.maze.current_coord()
-        room = self.maze.get_room(coord)
+        room = self.current_room()
         if room.get_creature() is None:
             return False
         return True
@@ -364,8 +364,7 @@ class MUDGame:
         """
         Returns True if item is found in the room.
         """
-        coord = self.maze.current_coord()
-        room = self.maze.get_room(coord)
+        room = self.current_room()
         if room.get_item() is None:
             return False
         return True
@@ -481,8 +480,7 @@ class MUDGame:
             # armor and weapon item will be automatically picked up
             # player can choose to pick up food item or not
             if self.item_found():
-                coord = self.maze.current_coord()
-                room = self.maze.get_room(coord)
+                room = self.current_room()
                 item = room.get_item()
                 if isinstance(item, data.Weapon):
                     self.steve.equip_weapon(item)
