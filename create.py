@@ -7,15 +7,20 @@ import action
 import character
 import data
 
-def _action(name: str, data: dict) -> action.Action:
+
+
+
+
+def _action(name: str, data_: dict) -> action.Action:
     """Factory function for Action"""
     Action = action.get(name)
     # The ** operator expands a dict into keyword arguments
     # which can be passed into a function or method
-    return Action(**data)
+    return Action(**data_)
 
 def creature(data_: dict) -> character.Creature:
-    actions = [_action(name, data_) for name, data in creature_data["actions"]]
+    """Factory function for Creature"""
+    actions = [_action(name, action_data) for name, action_data in data_["actions"].items()]
     if "Heal" in actions:
         return character.HealingCreature(
             data_["name"],
@@ -39,9 +44,23 @@ def food(data_: dict) -> data.Food:
     """Factory function for Food"""
     return Food(data_["name"], data_["hprestore"])
 
-def weapon(data_: weapon) -> data.Weapon:
+def weapon(data_: dict) -> data.Weapon:
     """Factory function for Weapon"""
     return Weapon(data_["name"], data_["atk"])
+
+def creature_from_name(name: str) -> character.Creature:
+    """Create a creature from the given name"""
+    # TODO: Replace linear search with more efficient algo
+    for data_ in character.creature_data:
+        if data_["name"] == name:
+            break
+    return creature(data_)
+
+def steve() -> character.Steve:
+    """Factory function for Steve.
+    Set defaults here.
+    """
+    return character.Steve("Steve", 50, 5)
 
 def random_item() -> data.Item:
     """returns a randomly generated item"""

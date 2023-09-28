@@ -22,7 +22,7 @@
         "actions": {
             "Attack": {"value": 10},
             "Heal": {"value": 15},
-            "Sonic Boom": {}
+            "Sonic Boom": {"value": 0}
         }
     }
 ]

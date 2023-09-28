@@ -3,10 +3,15 @@ import math
 import random
 
 import character
+import create
 import data
 import text
 from generator import LabyrinthGenerator
 from maze import cardinal, Coord, Maze, Room
+
+
+BOSS = "King Warden"
+
 
 NORTH = "NORTH"
 SOUTH = "SOUTH"
@@ -216,9 +221,9 @@ class MUDGame:
         generator.generate()
         labyrinth = generator.get_maze()
         self.maze = LabyrinthManager(labyrinth)
-        self.steve = character.Steve()
+        self.steve = create.steve()
         self.steve_path = []
-        self.boss = character.Boss()
+        self.boss = create.creature_from_name(BOSS)
 
     def introduce(self) -> None:
         """
