@@ -26,92 +26,20 @@ PI = 3.14159265359
 
 
 class LabyrinthManager:
-    """
+    """This class encapsulates access to the labyrinth grid
     -- ATTRIBUTES --
     - lab: list[list[Room]]
-    - difficulty_level
-    - boss_pos: Coord
-    - steve_pos: Coord
 
     -- METHODS --
+    + can_move_here() -> bool
     + get_room() -> Room
     + set_room(Room) -> None
-    + layout() -> str
-    + current_coord() -> Coord
-    + move_boss(self) -> None
-    + move_steve(self) -> None
-    + can_move_here() -> bool
    """
 
     def __init__(self, labyrinth: Maze):
         self.lab = labyrinth
-        self.difficulty_level = None
         self.boss_pos = Coord(9, 9)  # Decided upon generation
         self.steve_pos = Coord(0, 0)  # Decided upon generation
-
-    def get_room(self, coord: Coord) -> "Room":
-        """Returns the room at the given coordinates"""
-        return self.lab.get(coord)
-
-    def set_room(self, coord: Coord, room: "Room") -> None:
-        """Returns the room at the given coordinates"""
-        self.lab.set(coord, room)
-
-    def layout(self) -> str:
-        outputstr = ""
-        for y in range(self.lab.y_size):
-            fulltopstr = ""
-            fullmidstr = ""
-            fullbottomstr = ""
-            for x in range(self.lab.x_size):
-                room = self.get_room(Coord(x, self.lab.y_size - y - 1))
-                N, S, E, W = room.get_neighbours()
-                topstr = " || " if N else "    "
-                bottomstr = " || " if S else "    "
-                midstr = "=" if W else " "
-                if room.steve_ishere():
-                    midstr += "S"
-                else:
-                    midstr += "/"
-                if room.boss_ishere():
-                    midstr += "B"
-                else:
-                    midstr += "/"
-                if E:
-                    midstr += "="
-                else:
-                    midstr += " "
-                fulltopstr += topstr
-                fullmidstr += midstr
-                fullbottomstr += bottomstr
-            outputstr += fulltopstr + "\n" + fullmidstr + "\n" + fullbottomstr + "\n"
-        return outputstr
-
-    def current_coord(self) -> Coord:
-        return self.steve_pos
-
-    def current_room(self) -> Room:
-        return self.lab.get(self.steve_pos)
-
-    def move_boss(self) -> None:
-        """Tries to move the boss from its current room to any (available) neighbour rooms.
-        
-        Does not jump over walls.
-        If the boss cannot move in any of the 4 cardinal directions, an error is raised as it implies that the room it is in is completely isolated, which should not happen.
-        """
-        directions = list(cardinal.values())
-        random.shuffle(directions)
-        for direction in directions:
-            if self.can_move_here(self.boss_pos, direction):
-                self.boss_pos = self.boss_pos.add(direction)
-                return None
-        raise RuntimeError(
-            f"Boss cannot move because its room {self.boss_pos} is unlinked to neighbours."
-        )
-
-    def move_steve(self, direction: Coord) -> None:
-        assert self.can_move_here(self.steve_pos, direction)
-        self.steve_pos = self.steve_pos.add(direction)
 
     def can_move_here(self, this_coords: Coord, direction: Coord) -> bool:
         """Tells whether an adjacent room is accessible.
@@ -122,6 +50,14 @@ class LabyrinthManager:
         assert self.lab.valid_coords(this_coords)
         thisroom = self.get_room(this_coords)
         return thisroom.dir_is_accessible(direction)
+
+    def get_room(self, coord: Coord) -> "Room":
+        """Returns the room at the given coordinates"""
+        return self.lab.get(coord)
+
+    def set_room(self, coord: Coord, room: "Room") -> None:
+        """Returns the room at the given coordinates"""
+        self.lab.set(coord, room)
 
     def _steve_useitem(self, item) -> None:
         """Uses a utility item. Not implemented because no utility items are implemented yet."""
@@ -214,7 +150,20 @@ class LabyrinthManager:
 
 
 class MUDGame:
-    """This class encapsulates data for the main game implementation."""
+    """This class encapsulates data for the main game implementation.
+
+    -- ATTRIBUTES --
+    - maze: Maze
+    - boss_pos: Coord
+    - steve_pos: Coord
+
+    -- METHODS --
+    + current_coord() -> Coord
+    + current_room() -> Room
+    + layout() -> str
+    + move_boss(self) -> None
+    + move_steve(self) -> None
+    """
 
     def __init__(self) -> None:
         self.gameover = False  # default
@@ -226,6 +175,14 @@ class MUDGame:
         self.steve = create.steve()
         self.visited = []
         self.boss = create.creature_from_name(BOSS)
+        self.boss_pos = Coord(9, 9)
+        self.steve_pos = Coord(0, 0)
+
+    def current_coord(self) -> Coord:
+        return self.steve_pos
+
+    def current_room(self) -> Room:
+        return self.maze.get(self.steve_pos)
 
     def prompt_username(self) -> str:
         """Prompt the player for username"""
@@ -235,6 +192,56 @@ class MUDGame:
                 print(text.username_error)
             else:
                 return username
+
+    def layout(self) -> str:
+        outputstr = ""
+        for y in range(self.lab.y_size):
+            fulltopstr = ""
+            fullmidstr = ""
+            fullbottomstr = ""
+            for x in range(self.lab.x_size):
+                room = self.get_room(Coord(x, self.lab.y_size - y - 1))
+                N, S, E, W = room.get_neighbours()
+                topstr = " || " if N else "    "
+                bottomstr = " || " if S else "    "
+                midstr = "=" if W else " "
+                if room.steve_ishere():
+                    midstr += "S"
+                else:
+                    midstr += "/"
+                if room.boss_ishere():
+                    midstr += "B"
+                else:
+                    midstr += "/"
+                if E:
+                    midstr += "="
+                else:
+                    midstr += " "
+                fulltopstr += topstr
+                fullmidstr += midstr
+                fullbottomstr += bottomstr
+            outputstr += fulltopstr + "\n" + fullmidstr + "\n" + fullbottomstr + "\n"
+        return outputstr
+
+    def move_boss(self) -> None:
+        """Tries to move the boss from its current room to any (available) neighbour rooms.
+        
+        Does not jump over walls.
+        If the boss cannot move in any of the 4 cardinal directions, an error is raised as it implies that the room it is in is completely isolated, which should not happen.
+        """
+        directions = list(cardinal.values())
+        random.shuffle(directions)
+        for direction in directions:
+            if self.maze.can_move_here(self.boss_pos, direction):
+                self.boss_pos = self.boss_pos.add(direction)
+                return None
+        raise RuntimeError(
+            f"Boss cannot move because its room {self.boss_pos} is unlinked to neighbours."
+        )
+
+    def move_steve(self, direction: Coord) -> None:
+        assert self.maze.can_move_here(self.steve_pos, direction)
+        self.steve_pos = self.steve_pos.add(direction)
 
     def game_is_over(self) -> bool:
         """
