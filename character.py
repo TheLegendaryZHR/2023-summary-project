@@ -310,3 +310,7 @@ class HealingCreature(Creature):
         while not isinstance(action, Attack):
             action = random.choice(self.actions)
         return action
+
+
+with open("content/creatures.json", 'r', encoding='utf-8') as f:
+    creature_data = json.load(f)

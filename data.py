@@ -67,46 +67,9 @@ class Weapon(Item):
         return self.attack
 
 
-def random_creature() -> "Creature":
-    """returns a randomly generated creature"""
-    creature_data = random.choice(creature_list)
-    if creature_data["name"] == "Creeper":
-        #remove creeper for now
-        return Creature(
-            creature_data["name"],
-            creature_data["base_hp"],
-            creature_data["base_atk"],
-            action.get(creature_data["actions"])
-        )
-    else:
-        return Creature(creature_data["name"], creature_data["base_hp"],
-                        creature_data["base_atk"])
-
-
-item_type_list = ["Armor", "Food", "Weapon"]
-
-
-def random_item() -> "Item":
-    """returns a randomly generated item"""
-    item_type = random.choice(item_type_list)
-    if item_type == "Armor":
-        item_data = random.choice(armor_list)
-        return Armor(item_data["name"], item_data["defence"],
-                     item_data["slot"])
-    elif item_type == "Food":
-        item_data = random.choice(food_list)
-        return Food(item_data["name"], item_data["hprestore"])
-    elif item_type == "Weapon":
-        item_data = random.choice(weapon_list)
-        return Weapon(item_data["name"], item_data["atk"])
-
-
-with open("content/creatures.json", 'r', encoding='utf-8') as f:
-    creature_list = json.load(f)
 with open("content/items/armor.json", 'r', encoding='utf-8') as f:
-    armor_list = json.load(f)
+    armor_data = json.load(f)
 with open("content/items/food.json", 'r', encoding='utf-8') as f:
-    food_list = json.load(f)
+    food_data = json.load(f)
 with open("content/items/weapon.json", 'r', encoding='utf-8') as f:
-    weapon_list = json.load(f)
-turn = 1
+    weapon_data = json.load(f)
