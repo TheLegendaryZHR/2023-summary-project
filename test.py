@@ -20,9 +20,9 @@ def test_attack():
     assert mg.steve.isdead() or mg.creature.isdead()
 
 def test_movesteve():
-    befpos = mg.maze.get_current_pos()
+    befpos = mg.maze.current_coord()
     mg.movesteve()
-    aftpos = mg.maze.get_current_pos()
+    aftpos = mg.maze.current_coord()
     if befpos == aftpos:
         raise RuntimeError("After movesteve() was run, Steve did not move.")
 

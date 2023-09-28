@@ -37,7 +37,7 @@ class LabyrinthManager:
     + get_room() -> Room
     + set_room(Room) -> None
     + layout() -> str
-    + get_current_pos() -> Coord
+    + current_coord() -> Coord
     + move_boss(self) -> None
     + move_steve(self) -> None
     + can_move_here() -> bool
@@ -87,7 +87,7 @@ class LabyrinthManager:
             outputstr += fulltopstr + "\n" + fullmidstr + "\n" + fullbottomstr + "\n"
         return outputstr
 
-    def get_current_pos(self) -> Coord:
+    def current_coord(self) -> Coord:
         """Tells the coordinates of Steve's current location."""
         return self.steve_pos
 
@@ -282,7 +282,7 @@ class MUDGame:
         Only boss and steve are able to heal themselves.
         Battle continues until one dies.
         """
-        coord = self.maze.get_current_pos()
+        coord = self.maze.current_coord()
         room = self.maze.get_room(coord)
         creature = room.get_creature()
         print(f"You have encountered the {creature.get_name()}!")
@@ -354,7 +354,7 @@ class MUDGame:
         """
         Returns True when creature is found in the room.
         """
-        coord = self.maze.get_current_pos()
+        coord = self.maze.current_coord()
         room = self.maze.get_room(coord)
         if room.get_creature() is None:
             return False
@@ -364,7 +364,7 @@ class MUDGame:
         """
         Returns True if item is found in the room.
         """
-        coord = self.maze.get_current_pos()
+        coord = self.maze.current_coord()
         room = self.maze.get_room(coord)
         if room.get_item() is None:
             return False
@@ -386,7 +386,7 @@ class MUDGame:
         """
         Move Steve to another room when no item or creatures left in the current room.
         """
-        current_location = self.maze.get_current_pos()
+        current_location = self.maze.current_coord()
         available_dir = []
         dir_provided = ''
         for dir_name, dir_coord in cardinal.items():
@@ -437,7 +437,7 @@ class MUDGame:
         # Main game loop
         while not self.game_is_over():
             print('\n')
-            self.visit(self.maze.get_current_pos)
+            self.visit(self.maze.current_coord)
             print(self.steve.status())
 
             # creature is found in the room
@@ -459,7 +459,7 @@ class MUDGame:
                 else:
                     odds = random.randint(1, 100)
                     if odds <= 40:
-                        current_location = self.maze.get_current_pos()
+                        current_location = self.maze.current_coord()
                         available_dir = []
                         for dir_name, dir_coord in cardinal.items():
                             if self.maze.can_move_here(current_location, dir_coord):
@@ -481,7 +481,7 @@ class MUDGame:
             # armor and weapon item will be automatically picked up
             # player can choose to pick up food item or not
             if self.item_found():
-                coord = self.maze.get_current_pos()
+                coord = self.maze.current_coord()
                 room = self.maze.get_room(coord)
                 item = room.get_item()
                 if isinstance(item, data.Weapon):
