@@ -26,7 +26,7 @@ class Action:
     + do() -> int
     """
     name: str
-    
+
     def do(self) -> int:
         raise NotImplementedError
 
@@ -64,7 +64,7 @@ class Attack(Action):
 
 
 class Explode(Attack):
-    name: "Explode"
+    name = "Explode"
 
     def do(self) -> int:
         random_letter = random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -81,6 +81,14 @@ class Explode(Attack):
             print("\n" + text.creeper_dodge_failure)
         elif (time.time() - start_time) > 1.8:
             print("\n" + text.creeper_dodge_slow)
+        return self.get()
+
+
+class SonicBoom(Attack):
+    name = "Sonic Boom"
+
+    def do(self) -> int:
+        print("This attack is not yet implemented, sorry!")
         return self.get()
 
 

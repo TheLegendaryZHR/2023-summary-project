@@ -218,7 +218,7 @@ class MUDGame:
         self.maze = LabyrinthManager(labyrinth)
         self.steve = character.Steve()
         self.steve_path = []
-        self.boss = data.Boss()
+        self.boss = character.Boss()
 
     def introduce(self) -> None:
         """
@@ -394,7 +394,7 @@ class MUDGame:
         current_location = self.maze.get_current_pos()
         available_dir = []
         dir_provided = ''
-        for dir_name, dir_coord in data.cardinal.items():
+        for dir_name, dir_coord in cardinal.items():
             if self.maze.can_move_here(current_location, dir_coord):
                 available_dir.append(dir_name)
         for i in range(len(available_dir)):
@@ -415,7 +415,7 @@ class MUDGame:
             if choice in valid_choice and len(choice) == 1:
                 validity = True
         choice = int(choice)
-        self.maze.move_steve(data.cardinal[available_dir[choice - 1]])
+        self.maze.move_steve(cardinal[available_dir[choice - 1]])
 
     def moveboss(self) -> None:
         """
@@ -465,11 +465,11 @@ class MUDGame:
                     if odds <= 40:
                         current_location = self.maze.get_current_pos()
                         available_dir = []
-                        for dir_name, dir_coord in data.cardinal.items():
+                        for dir_name, dir_coord in cardinal.items():
                             if self.maze.can_move_here(current_location, dir_coord):
                                 available_dir.append(dir_name)
                         random_dir = random.choice(available_dir)
-                        self.maze.move_steve(data.cardinal[random_dir])
+                        self.maze.move_steve(cardinal[random_dir])
                         print(text.escape_success)
                         continue
                     else:
