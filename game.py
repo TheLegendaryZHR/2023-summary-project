@@ -78,10 +78,6 @@ class LabyrinthManager:
         """Returns the room at the given coordinates"""
         self.lab.set(coord, room)
 
-    def _steve_useitem(self, item) -> None:
-        """Uses a utility item. Not implemented because no utility items are implemented yet."""
-        raise NotImplementedError
-
     def _give_sound_clue(self):
         """Displays a message giving a hint how far away the boss is from steve
         and which direction steve might have to go in order to find the boss.
@@ -98,7 +94,6 @@ class LabyrinthManager:
         if i <= 20:
             print(random.choice(text.clues_noclue))
             return None
-
         r, dirstr = self._r_dir_calc(displacement)
         if r < 3:
             print(random.choice(text.clues_shortrange))
@@ -321,29 +316,6 @@ class MUDGame:
         else:
             raise TypeError(f"{choice!r}: invalid action")
 
-    def show_options(self, sit: str) -> None:
-        """
-        Print menu of options provided to users according to different situation.
-        """
-        if sit == 'creature':
-            menu = "1. Attack \n2. Run away"
-        elif sit == 'item':
-            menu = '1. Pick Up \n2. Do not pick up'
-        elif sit == 'restart':
-            menu = '1. Yes \n2. No'
-        elif sit == 'battle':
-            menu = '1. Attack \n2. Heal'
-        print(menu)
-
-    def isvalid(self, opt) -> bool:
-        """
-        Validate player's choice when given 2 options.
-        Returns a Boolean value.
-        """
-        if opt in '12' and len(opt) == 1:
-            return True
-        return False
-
     def enter_battle(self, steve: character.Steve, creature: character.Creature) -> None:
         """
         Battle between Steve and creatures.
@@ -384,6 +356,9 @@ class MUDGame:
         raise ValueError(f"{choice!r}: invalid battle choice")
 
     def handle_battle_round(self, steve: character.Steve, creature: character.Creature) -> None:
+        """One round of battle consists of Steve making a choice, followed by
+        the creature if it is still alive.
+        """
         # Steve's turn
         choice = self.prompt_battle_choice(steve)
         self.handle_battle_choice(choice, steve, creature)
@@ -412,7 +387,7 @@ class MUDGame:
             if self.maze.can_move_here(current_location, dir_coord):
                   available_dir.append(dir_name)
         random_dir = random.choice(available_dir)
-        self.move_steve(cardinal[random_dir])
+        self.move_steve(random_dir)
         print(text.escape_success)
 
     def handle_heal(self, combatant: character.Combatant, amt: int) -> None:
@@ -439,19 +414,6 @@ class MUDGame:
         elif isinstance(choice, action.DoNothing):
             print(text.no_item)
 
-    def isvalid_heal(self, heal_option) -> bool:
-        """
-        Validate player's option when choosing food items from inventory.
-        Used for battle()
-        """
-        range_of_option = self.steve.inventory.length() + 1
-        valid_opt = []
-        for i in range(1, range_of_option):
-            valid_opt.append(str(i))
-        if heal_option in valid_opt:
-            return True
-        return False
-
     def prompt_direction(self) -> str:
         """Prompt player for a valid direction to move."""
         current_location = self.current_coord()
@@ -463,12 +425,6 @@ class MUDGame:
                     text.move_prompt,
                     text.option_invalid)
         return direction
-
-    def invalid_opt(self) -> None:
-        """
-        Show error message.
-        """
-        print(text.option_invalid)
 
     def visit(self, coord: Coord) -> None:
         """Treat the coord as visited"""
