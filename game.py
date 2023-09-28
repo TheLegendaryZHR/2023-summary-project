@@ -8,7 +8,7 @@ import character
 import create
 import data
 import text
-from generator import LabyrinthGenerator
+from generator import Random
 from maze import cardinal, Coord, Maze, Room
 
 
@@ -182,7 +182,7 @@ class MUDGame:
     def __init__(self) -> None:
         self.gameover = False  # default
         self.won = False  # default
-        generator = LabyrinthGenerator(x_size=LABSIZE, y_size=LABSIZE)
+        generator = Random(x_size=LABSIZE, y_size=LABSIZE)
         generator.generate()
         labyrinth = generator.get_maze()
         self.maze = LabyrinthManager(labyrinth)
@@ -209,21 +209,21 @@ class MUDGame:
 
     def layout(self) -> str:
         outputstr = ""
-        for y in range(self.lab.y_size):
+        for y in range(self.maze.lab.y_size):
             fulltopstr = ""
             fullmidstr = ""
             fullbottomstr = ""
-            for x in range(self.lab.x_size):
-                room = self.maze.get_room(Coord(x, self.lab.y_size - y - 1))
+            for x in range(self.maze.lab.x_size):
+                room = self.maze.get_room(Coord(x, self.maze.lab.y_size - y - 1))
                 N, S, E, W = room.get_neighbours()
                 topstr = " || " if N else "    "
                 bottomstr = " || " if S else "    "
                 midstr = "=" if W else " "
-                if room.steve_ishere():
+                if room.get_coord().is_same(self.steve_pos):
                     midstr += "S"
                 else:
                     midstr += "/"
-                if room.boss_ishere():
+                if room.get_coord().is_same(self.boss_pos):
                     midstr += "B"
                 else:
                     midstr += "/"

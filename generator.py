@@ -4,6 +4,29 @@ from maze import cardinal, Coord, Maze, Room
 
 
 class LabyrinthGenerator:
+    """Base class for all labyrinth generators.
+
+    -- ATTRIBUTES --
+    - maze: Maze
+    
+    -- METHODS --
+    + generate(self) -> None
+    + get_maze(self) -> Maze
+    """
+    def __init__(self, x_size: int, y_size: int):
+        self.maze = Maze(x_size, y_size)
+
+    def generate(self) -> None:
+        """Execute the maze generation.
+        No return is required.
+        """
+        raise NotImplementedError
+
+    def get_maze(self) -> Maze:
+        return self.maze
+
+
+class Random(LabyrinthGenerator):
     """Generates a labyrinth for the game.
     
     -- ATTRIBUTES --
@@ -15,15 +38,7 @@ class LabyrinthGenerator:
     - generate_place_steve_boss() -> None:
     - generate_link_rooms(room1coords: list, room2coords: list) -> None:
     - generate_rooms_connected() -> bool:
-   """
-
-    def __init__(self, x_size: int, y_size: int):
-        self.maze = Maze(x_size, y_size)
-        self.generate()
-
-    def get_maze(self) -> Maze:
-        """Return the generated maze"""
-        return self.maze
+    """
 
     def generate(self) -> None:
         """Helper method for the generate() method.
@@ -223,3 +238,16 @@ class LabyrinthGenerator:
                 if not room.is_connected_tostart:
                     number_of_unconnected += 1  # counter
         return number_of_unconnected
+
+
+class RecursiveBacktrace(LabyrinthGenerator):
+    """Implements recursive backtracing for maze generation.
+
+    This strategy keeps track of visited rooms.
+    1. Generate all rooms with walls
+    2. Visit a random unvisited neighbour and carve through the adjoining wall
+    3. Repeat until it is not possible to proceed.
+    4. Go back to the last room with unvisited neighbours and repeat.
+    """
+    def generate(self) -> None:
+        pass

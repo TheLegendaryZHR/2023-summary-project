@@ -39,7 +39,53 @@ class Coord:
         return Coord(neighbour.x - self.x, neighbour.y - self.y)
 
 
-class Room:
+class Side:
+    """Superclass representing what player might encounter for each side of a room.
+
+    Methods
+    -------
+    + is_boundary() -> bool
+    + is_room() -> bool
+    + is_wall() -> bool
+    """
+    def is_boundary(self) -> bool:
+        raise NotImplementedError
+
+    def is_room(self) -> bool:
+        raise NotImplementedError
+
+    def is_wall(self) -> bool:
+        raise NotImplementedError
+
+
+class Boundary(Side):
+    """Represents the edges of the maze.
+    There is no room on the other side.
+    """
+    def is_boundary(self) -> bool:
+        return True
+
+    def is_room(self) -> bool:
+        return False
+
+    def is_wall(self) -> bool:
+        return False
+
+
+class Wall(Side):
+    """Represents a wall, with a room on the other side.
+    This room cannot be accessed through normal means.
+    """
+    def is_boundary(self) -> bool:
+        return False
+
+    def is_room(self) -> bool:
+        return False
+
+    def is_wall(self) -> bool:
+        return True
+
+class Room(Side):
     """
     -- ATTRIBUTES --
     + coord: Coord
@@ -50,13 +96,6 @@ class Room:
     -- METHODS --
     + get_direction(direction: str) -> Room
     + set_direction(direction: str, room: Room) -> None
-    + settype_startroom(self) -> None
-    + steve_leaves(self) -> None
-    + steve_enters -> None
-    + steve_leaves -> None
-    + steve_enters -> None
-
-    
     """
 
     def __init__(self, coord: Coord):
@@ -66,10 +105,19 @@ class Room:
         self.is_connected_tostart = False
         self.creature = None
         self.item = None
-        self.connected_rooms: "dict[str, Room | None]" = {
-            dir_name: None
+        self.connected_rooms: dict[str, Side] = {
+            dir_name: Wall()
             for dir_name, dir_coord in cardinal.items()
         }
+
+    def is_boundary(self) -> bool:
+        return False
+
+    def is_room(self) -> bool:
+        return True
+
+    def is_wall(self) -> bool:
+        return False
 
     def get_coord(self) -> Coord:
         return self.coord
@@ -88,19 +136,19 @@ class Room:
         # makes assumptions that {direction} of this room is neighbour.
         self.set_direction(direction, room)
 
-    def get_direction(self, dir_name: str) -> "Room | None":
+    def get_direction(self, dir_name: str) -> Side:
         if dir_name in cardinal:
             return self.connected_rooms[dir_name]
         raise ValueError(f"{dir_name!r}: invalid direction")
 
-    def set_direction(self, dir_name: str, room: "Room") -> None:
+    def set_direction(self, dir_name: str, room: Side) -> None:
         assert isinstance(room, Room)
         if dir_name in cardinal:
             self.connected_rooms[dir_name] = room
             return
         raise ValueError(f"{dir_name!r}: invalid direction")
 
-    def get_neighbours(self) -> "list[Room | None]":
+    def get_neighbours(self) -> list[Side]:
         """Return a list of rooms in each of the N, S, E, W directions."""
         return list(self.connected_rooms.values())
 
