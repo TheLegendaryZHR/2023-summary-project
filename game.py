@@ -3,6 +3,7 @@ import math
 import random
 from typing import Any
 
+import action
 import character
 import create
 import data
@@ -200,7 +201,7 @@ class MUDGame:
         return self.steve_pos
 
     def current_room(self) -> Room:
-        return self.maze.get(self.steve_pos)
+        return self.maze.get_room(self.steve_pos)
 
     def prompt_username(self) -> str:
         """Prompt the player for username"""
@@ -218,7 +219,7 @@ class MUDGame:
             fullmidstr = ""
             fullbottomstr = ""
             for x in range(self.lab.x_size):
-                room = self.get_room(Coord(x, self.lab.y_size - y - 1))
+                room = self.maze.get_room(Coord(x, self.lab.y_size - y - 1))
                 N, S, E, W = room.get_neighbours()
                 topstr = " || " if N else "    "
                 bottomstr = " || " if S else "    "
@@ -242,10 +243,13 @@ class MUDGame:
         return outputstr
 
     def move_boss(self) -> None:
-        """Tries to move the boss from its current room to any (available) neighbour rooms.
+        """Tries to move the boss from its current room to any (available) 
+        neighbour rooms.
         
         Does not jump over walls.
-        If the boss cannot move in any of the 4 cardinal directions, an error is raised as it implies that the room it is in is completely isolated, which should not happen.
+        If the boss cannot move in any of the 4 cardinal directions, an error is raised
+        as it implies that the room it is in is completely isolated, which should not
+        happen.
         """
         directions = list(cardinal.values())
         random.shuffle(directions)
@@ -254,35 +258,36 @@ class MUDGame:
                 self.boss_pos = self.boss_pos.add(direction)
                 return None
         raise RuntimeError(
-            f"Boss cannot move because its room {self.boss_pos} is unlinked to neighbours."
+            f"No movement direction available to Boss at {self.boss_pos}."
         )
 
-    def move_steve(self, direction: Coord) -> None:
+    def move_steve(self, direction: str) -> None:
         """Move Steve in the specified direction.
         The direction is assumed to have been validated.
         """
-        self.steve_pos = self.steve_pos.add(direction)
+        self.steve_pos = self.steve_pos.add(cardinal[direction])
 
     def game_is_over(self) -> bool:
         """
         Returns True if either Steve or Boss is dead.
         """
-        if self.steve.isdead() or self.boss.isdead():  # other conditions
-            return True
+        return self.steve.isdead() or self.boss.isdead()
 
-    def prompt_encounter(self) -> str:
-        return prompt_valid_choice(
-            ["Attack", "Run away"],
+    def prompt_encounter(self) -> action.Action:
+        choice = prompt_valid_choice(
+            [action.EnterBattle, action.RunAway],
             text.option_prompt,
             text.option_invalid
         )
+        return choice()
 
-    def prompt_pickup_item(self) -> str:
-        return prompt_valid_choice(
-            ["Pick up", "Do not pick up"],
+    def prompt_pickup_item(self, item: str) -> action.Action:
+        choice = prompt_valid_choice(
+            [action.PickUp, action.DoNothing],
             text.option_prompt,
             text.option_invalid
         )
+        return choice(item)
 
     def prompt_restart(self) -> str:
         return prompt_valid_choice(
@@ -291,12 +296,30 @@ class MUDGame:
             text.option_invalid
         )
 
-    def prompt_battle(self) -> str:
-        return prompt_valid_choice(
-            ["Attack", "Heal"],
+    def prompt_battle_choice(self, steve: character.Steve) -> action.Action:
+        food_items = [
+            slot.item
+            for slot in steve.get_food_items()
+        ]
+        if not food_items:
+            return action.Attack(steve.get_attack())
+        choice = prompt_valid_choice(
+            [action.Attack, action.Eat],
             text.option_prompt,
             text.option_invalid
         )
+        if isinstance(choice, action.Attack):
+            return action.Attack(steve.get_attack())
+        elif isinstance(choice, action.Eat):
+            print("\nYou have:\n")
+            food = prompt_valid_choice(
+                food_items,
+                text.heal_prompt,
+                text.option_invalid
+            )
+            return action.Eat(food.name)
+        else:
+            raise TypeError(f"{choice!r}: invalid action")
 
     def show_options(self, sit: str) -> None:
         """
@@ -321,81 +344,100 @@ class MUDGame:
             return True
         return False
 
-    def handle_heal(self, steve: character.Steve, food: data.Food) -> None:
-        prevhp = steve.health
-        steve.eat(food)
-        print(text.heal_report(
-            steve.health - prevhp,
-            steve.health
-        ))
-        print(text.damage_report(
-            prevhp - steve.health,
-            steve.health
-        ))
-        print(text.heal_success)
-
-    def handle_attack(self, steve: character.Steve, creature: character.Creature) -> int:
-        damage = steve.get_attack()
-        creature.take_damage(damage)
-        print(text.battle_hp_report(
-            creature.name,
-            creature.health
-        ))
-        return damage
-
-    def handle_battle_round(self, steve: character.Steve, creature: character.Creature) -> None:
-        choice = prompt_valid_choice(
-            ["Attack", "Heal"],
-            text.option_prompt,
-            text.option_invalid
-        )
-        if choice == 'Attack':
-            self.handle_attack(steve, creature)
-        elif choice == 'Heal':
-            # self.handle_heal()
-            print("\nYou have:\n")
-            food_items = [
-                slot.item
-                for slot in steve.get_food_items()
-            ]
-            food = prompt_valid_choice(
-                food_items,
-                text.heal_prompt,
-                text.option_invalid
-            )
-            self.handle_heal(steve, food)
-
-    def enter_battle(self) -> None:
+    def enter_battle(self, steve: character.Steve, creature: character.Creature) -> None:
         """
         Battle between Steve and creatures.
         Each takes a turn to deal damage or heal.
         Only boss and steve are able to heal themselves.
         Battle continues until one dies.
         """
-        room = self.current_room()
-        creature = room.creature
         print(f"You have encountered the {creature.name}!")
-        while not self.steve.isdead() and not creature.isdead():
-            print(self.steve.status())
-            if self.steve.inventory.is_empty():
-                print(
-                    f'You have no heal items! \nAttack the {creature.name}.'
-                )
-                self.handle_attack(self.steve, creature)
-            else:
-                self.handle_battle_round(self.steve, creature)      
-            #Steve endturn
-            if creature.isdead():
-                continue
-            action = creature.act()
-            damage = action.do()
-            if damage:
-                print(text.creature_selfheal(creature.name))
-            else:
-                self.steve.take_damage(damage)
-                print(text.creature_dealdmg(creature.name, damage))
+        while not steve.isdead() and not creature.isdead():
+             self.handle_battle_round(steve, creature)
         if creature.isdead():
-            room.creature = None
+            self.current_room().creature = None
+
+    def handle_attack(self, aggressor: character.Combatant, defender: character.Combatant, damage: int) -> int:
+        defender.take_damage(damage)
+        print(text.battle_hp_report(
+            defender.name,
+            defender.health
+        ))
+        return damage
+
+    def handle_battle_choice(self,
+                             choice: action.Action,
+                             actor: character.Combatant,
+                             actee: character.Combatant) -> None:
+        if isinstance(choice, action.Attack):
+            damage = choice.do()
+            self.handle_attack(actor, actee, damage)
+            print(text.creature_dealdmg(actor.name, damage))
+        elif isinstance(choice, action.Heal):
+            healing = choice.do()
+            print(text.creature_selfheal(actor.name))
+            self.handle_heal(actor, healing)
+        elif isinstance(choice, action.Eat):
+            food = choice.do()
+            assert isinstance(actor, character.Steve)
+            self.handle_eat(actor, food)
+        raise ValueError(f"{choice!r}: invalid battle choice")
+
+    def handle_battle_round(self, steve: character.Steve, creature: character.Creature) -> None:
+        # Steve's turn
+        choice = self.prompt_battle_choice(steve)
+        self.handle_battle_choice(choice, steve, creature)
+        if creature.isdead():
+            return
+        # Creature's turn
+        choice = creature.act()
+        self.handle_battle_choice(choice, creature, steve)
+
+    def handle_eat(self, steve: character.Steve, name: str) -> None:
+        food = steve.inventory.get(name)
+        assert isinstance(food, data.Food)
+        steve.consume_item(food)
+        self.handle_heal(steve, food.hprestore)
+
+    def handle_escape(self, steve: character.Steve, creature: character. Creature) -> None:
+        odds = random.randint(1, 100)
+        # Fail to escape
+        if odds > 40:
+            print(text.escape_failure)
+            self.enter_battle(steve, creature)
+        # Succeeded in escaping
+        current_location = self.current_coord()
+        available_dir = []
+        for dir_name, dir_coord in cardinal.items():
+            if self.maze.can_move_here(current_location, dir_coord):
+                  available_dir.append(dir_name)
+        random_dir = random.choice(available_dir)
+        self.move_steve(cardinal[random_dir])
+        print(text.escape_success)
+
+    def handle_heal(self, combatant: character.Combatant, amt: int) -> None:
+        prevhp = combatant.health
+        combatant.heal(amt)
+        print(text.heal_report(
+            combatant.health - prevhp,
+            combatant.health
+        ))
+        print(text.damage_report(
+            prevhp - combatant.health,
+            combatant.health
+        ))
+        print(text.heal_success)
+
+    def handle_menu_choice(self, choice: action.Action, steve: character.Steve, creature: character.Creature) -> None:
+        if isinstance(choice, action.EnterBattle):
+                    self.enter_battle(steve, creature)
+        elif isinstance(choice, action.RunAway):
+            self.handle_escape(steve, creature)
+        elif isinstance(choice, action.PickUp):
+            item = choice.do()
+            self.steve.take_item(item, 1)
+        elif isinstance(choice, action.DoNothing):
+            print(text.no_item)
 
     def isvalid_heal(self, heal_option) -> bool:
         """
@@ -410,18 +452,6 @@ class MUDGame:
             return True
         return False
 
-    def show_winscreen(self) -> None:
-        """
-        Shows winscreen when Boss dies.
-        """
-        print(text.game_win)
-
-    def show_losescreen(self) -> None:
-        """
-        Show losescreen when Steve dies."""
-        print(text.game_lose)
-        print(f"Score: {random.randint(0, 10000)}")
-
     def prompt_direction(self) -> str:
         """Prompt player for a valid direction to move."""
         current_location = self.current_coord()
@@ -430,17 +460,9 @@ class MUDGame:
             if self.maze.can_move_here(current_location, dir_coord):
                 available_dir.append(dir_name)
         direction = prompt_valid_choice(available_dir,
-                                     text.move_prompt,
-                                     text.option_invalid)
+                    text.move_prompt,
+                    text.option_invalid)
         return direction
-
-        self.maze.move_steve(cardinal[available_dir[choice - 1]])
-
-    def moveboss(self) -> None:
-        """
-        Move boss to another room.
-        """
-        self.maze.move_boss()
 
     def invalid_opt(self) -> None:
         """
@@ -452,6 +474,14 @@ class MUDGame:
         """Treat the coord as visited"""
         self.visited.append(coord)
 
+    def game_end(self) -> None:
+        """Display suitable text at game end"""
+        if self.steve.isdead():
+            print(text.game_win)
+        else:
+            print(text.game_lose)
+        print(f"Score: {random.randint(0, 10000)}")
+
     def run(self):
         """Run the game"""
         # starting interface
@@ -461,77 +491,44 @@ class MUDGame:
         # Main game loop
         while not self.game_is_over():
             print('\n')
-            self.visit(self.maze.current_coord())
+            room = self.current_room()
+            self.visit(self.current_coord())
             print(self.steve.status())
-
-            # creature is found in the room
-            if self.current_room().creature:
-
-                # show player action options
-                choice = self.prompt_encounter()
-                if choice == '1':
-                    self.battle()
-                    if self.game_is_over():
-                        continue
-
-                # steve has 40% chance of running away to another room, 60% chance to battle instead
-                else:
-                    odds = random.randint(1, 100)
-                    if odds <= 40:
-                        current_location = self.maze.current_coord()
-                        available_dir = []
-                        for dir_name, dir_coord in cardinal.items():
-                            if self.maze.can_move_here(current_location, dir_coord):
-                                available_dir.append(dir_name)
-                        random_dir = random.choice(available_dir)
-                        self.maze.move_steve(cardinal[random_dir])
-                        print(text.escape_success)
-                        continue
-                    else:
-                        print(text.escape_failure)
-                        self.battle()
-                        if self.game_is_over():
-                            continue
-            else:
+            if not room.creature:
                 print(text.escape_notrequired)
-
-            # item is found in the room
-            # item can be 'Armor', 'Food', 'Weapon'
-            # armor and weapon item will be automatically picked up
-            # player can choose to pick up food item or not
-            if self.current_room().item:
-                item = self.current_room().item
-                if isinstance(item, data.Weapon):
-                    self.steve.equip_weapon(item)
-                    print(text.found_item(
-                        "stronger weapon",
-                        f'It deals {item.get_attack()} damage now!'
-                    ))
-                elif isinstance(item, data.Armor):
-                    self.steve.equip_armor(item)
-                    print(text.found_item(
-                        "stronger armor",
-                        f'It blocks {item.get_defence()} damage now!'
-                    ))
-                else:
-                    print(text.found_item(
-                        item.name,
-                        "Do you want to pick it up?"
-                    ))
-                    choice = self.prompt_pickup_item()
-                    if choice == '1':
-                        self.steve.take_item(item, 1)
             else:
+                choice = self.prompt_encounter()
+                self.handle_menu_choice(choice, self.steve, room.creature)
+            if self.game_is_over():
+                break
+            # Pick up loot
+            if not room.item:
                 print(text.no_item)
+                continue
+            if isinstance(room.item, data.Weapon):
+                self.steve.equip_weapon(room.item)
+                print(text.found_item(
+                    "stronger weapon",
+                    f'It deals {room.item.get_attack()} damage now!'
+                ))
+            elif isinstance(room.item, data.Armor):
+                self.steve.equip_armor(room.item)
+                print(text.found_item(
+                    "stronger armor",
+                    f'It blocks {item.get_defence()} damage now!'
+                ))
+            else:
+                print(text.found_item(
+                    room.item.name,
+                    "Do you want to pick it up?"
+                ))
+                choice = self.prompt_pickup_item(room.item.name)
+                self.handle_menu_choice(choice, self.steve, room.creature)
 
-            # move steve to the next room according to player's input, 30% chance of moving boss to adjacent room
+            # Move steve and boss
             direction = self.prompt_direction()
             self.move_steve(direction)
             if random.randint(1, 100) <= 30:
-                self.moveboss()
+                self.move_boss()
 
-        # game end interface
-        if self.steve.isdead():
-            self.show_losescreen()
-        else:
-            self.show_winscreen()
+        self.game_end()

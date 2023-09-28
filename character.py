@@ -71,7 +71,7 @@ class Inventory(Container[data.Item]):
         return True
 
     def get(self, name: str) -> data.Item:
-        return self.contents[name]
+        return self.contents[name].item
 
     def is_empty(self) -> bool:
         return len(self.contents) == 0
@@ -176,11 +176,17 @@ class Steve(Combatant):
         """Return a list of slots representing food items"""
         return self.inventory.items(data.Food)
 
-    def take_item(self, item: data.Item, num: int) -> bool:
+    def take_item(self, item: data.Item, num: int = 1) -> bool:
         """Return True if the item was successfully added to inventory,
         otherwise False.
         """
         return self.inventory.add(item, num)
+
+    def consume_item(self, item: data.Item, num: int = 1) -> bool:
+        """Return True if the item was successfully consumed,
+        otherwise False.
+        """
+        return self.inventory.consume(item, num)
 
     def equip_armor(self, armoritem: data.Armor) -> None:
         self.armor[armoritem.armor_slot] = armoritem

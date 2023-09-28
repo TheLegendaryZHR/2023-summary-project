@@ -6,7 +6,7 @@ Should not rely on other modules apart from text.py.
 """
 import random
 import time
-from typing import Type
+from typing import Any, Type
 
 import text
 
@@ -27,8 +27,11 @@ class Action:
     """
     name: str
 
-    def do(self) -> int:
-        raise NotImplementedError
+    def __str__(self, *args, **kwargs) -> str:
+        return self.name
+
+    def do(self) -> Any:
+        return None
 
 
 class Attack(Action):
@@ -39,13 +42,11 @@ class Attack(Action):
 
     Attributes
     ----------
-    + name: str
     - value: int
 
     Methods
     -------
     + get() -> int
-    + do() -> int
     """
     name = "Attack"
 
@@ -99,13 +100,11 @@ class Heal(Action):
 
     Attributes
     ----------
-    + name: str
     - value: int
 
     Methods
     -------
     + get() -> int
-    + do() -> int
     """
     name: str = "Heal"
 
@@ -121,6 +120,74 @@ class Heal(Action):
         Return the final healing value.
         """
         return self.get()
+
+
+class Eat(Action):
+    """Eat enables the player to eat a food item.
+
+    Attributes
+    ----------
+    - item: name
+
+    Methods
+    -------
+    + get() -> name
+    """
+    name: str = "Eat"
+
+    def __init__(self, item: str) -> None:
+        self._item = item
+
+    def get(self) -> str:
+        """Get the calculated healing magnitude"""
+        return self._item
+
+    def do(self) -> str:
+        """Carry out the healing, including any required effects.
+        Return the final healing value.
+        """
+        return self.get()
+
+class PickUp(Action):
+    """Pick up an item (and put in inventory).
+
+    Attributes
+    ----------
+    - item: name
+
+    Methods
+    -------
+    + get() -> name
+    """
+    name: str = "Pick Up"
+
+    def __init__(self, item: Any) -> None:
+        self._item = item
+
+    def get(self) -> str:
+        """Get the calculated healing magnitude"""
+        return self._item
+
+    def do(self) -> Any:
+        """Carry out the healing, including any required effects.
+        Return the final healing value.
+        """
+        return self.get()
+
+
+class EnterBattle(Action):
+    """Enter battle."""
+    name: str = "Enter Battle"
+
+
+class RunAway(Action):
+    """Run away from battle."""
+    name: str = "Run Away"
+
+
+class DoNothing(Action):
+    """Take no action."""
+    name: str = "Do Nothing"
 
 
 def get(name: str) -> Type[Action]:
