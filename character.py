@@ -66,7 +66,12 @@ class Inventory(Container[data.Item]):
         if slot.count < num:
             return False
         self.contents[item.name].decr(num)
+        if self.contents[item.name].count == 0:
+            del self.contents[item.name]
         return True
+
+    def get(self, name: str) -> data.Item:
+        return self.contents[name]
 
     def is_empty(self) -> bool:
         return len(self.contents) == 0
@@ -101,12 +106,13 @@ class Steve:
     -- METHODS --
     """
 
-    def __init__(self, name: str, health: int, base_damage: int):
+    def __init__(self, name: str, maxhp: int, base_damage: int):
         self.inventory = Inventory()
         self.name = name
-        self.health = health
+        self.maxhp = maxhp
+        self.health = maxhp
         self.base_damage = base_damage
-        self.armor = {
+        self.armor: dict[str, Optional[data.Armor]] = {
             "helmet": None,
             "chestplate": None,
             "leggings": None,
@@ -139,56 +145,17 @@ class Steve:
         """
         return self.inventory.add(item, num)
 
-    def _discard_item(self, item: data.Item, num: int) -> None:
-        for index, dict_ in enumerate(
-                self._inventory):  # Linear search through inventory
-            if str(item) == str(
-                    dict_["item"]):  # new_item is already in the inventory
-                self._inventory[index]["number"] -= num
-                if self._inventory[index]["number"] <= 0:
-                    self._inventory[index] = None
-                return None
-        print("Error: Item is not in inventory.")
-        return None
-
     def equip_armor(self, armoritem: data.Armor) -> None:
         self.armor[armoritem.armor_slot] = armoritem
-        return None
 
-    def eat(self, foodindex: int) -> None:
-        fooditem = self._inventory[foodindex]["item"]
-        #validation
-        assert foodindex >= 0
-        assert isinstance(fooditem, data.Food)
-        # consumption
-        self.remove_item_from_inv(foodindex)
-        self.heal_health(fooditem.hprestore)
+    def eat(self, food: data.Food) -> None:
+        assert isinstance(food, data.Food)
+        self.inventory.consume(food)
+        self.heal(food.hprestore)
 
-    def find_item(self, item: data.Item) -> int:
-        """Linear search through inventory to find the index of the item"""
-        for i in self._inventory:
-            if str(i["item"]) == str(item):
-                return i
-        return -1  # return value is -1 when not found.
-
-    def remove_item_from_inv(self, index) -> None:
-        assert index in range(self.inventory.length())
-        if self._inventory[index][
-                "number"] == 1:  # Steve has only 1 of this such item left
-            self._inventory.pop(index)
-            # This dict is removed as there are no more of such items in the inventory
-            return None
-        self._inventory[index]["number"] -= 1
-        return None
-
-    def heal_health(self, change: int) -> None:
-        if change == 0:
-            return None
-        if change > 0:
-            self.health = min(self.health + change, 50)
-            return None
-        self.health = max(self.health + change, 0)
-        return None
+    def heal(self, change: int) -> None:
+        assert change > 0
+        self.health = min(self.health + change, self.maxhp)
 
     def get_defence(self) -> int:
         defence = 0

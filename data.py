@@ -42,7 +42,7 @@ class Food(Item):
 
 class Armor(Item):
 
-    def __init__(self, name: str, defence: int, armor_slot: int):
+    def __init__(self, name: str, defence: int, armor_slot: str):
         super().__init__(name)
         self.defence = defence
         self.armor_slot = armor_slot
