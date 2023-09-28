@@ -2,9 +2,11 @@
 import math
 import random
 
+import character
 import data
-from generator import LabyrinthGenerator
 import text
+from generator import LabyrinthGenerator
+from maze import cardinal, Coord, Maze, Room
 
 NORTH = "NORTH"
 SOUTH = "SOUTH"
@@ -213,8 +215,8 @@ class MUDGame:
         generator = LabyrinthGenerator(x_size=LABSIZE, y_size=LABSIZE)
         generator.generate()
         labyrinth = generator.get_maze()
-        self.maze = data.LabyrinthManager(labyrinth)
-        self.steve = data.Steve()
+        self.maze = LabyrinthManager(labyrinth)
+        self.steve = character.Steve()
         self.steve_path = []
         self.boss = data.Boss()
 
@@ -493,7 +495,7 @@ class MUDGame:
                         f'It deals {item.get_attack()} damage now!'
                     ))
                 elif isinstance(item, data.Armor):
-                    self.steve.equip_armour(item)
+                    self.steve.equip_armor(item)
                     print(text.found_item(
                         "stronger armor",
                         f'It blocks {item.get_defence()} damage now!'
