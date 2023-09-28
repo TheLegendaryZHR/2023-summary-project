@@ -6,19 +6,10 @@ import random
 import time
 from typing import Optional, Type
 
-from location import Coord, Room, cardinal
 import text
+from maze import Coord, Maze, Room, cardinal
 
 PI = 3.14159265359
-
-LABSIZE = 10  # cannot be too small!!
-
-
-def valid_coords(roomcoords: Coord) -> bool:
-    if roomcoords.x not in list(range(LABSIZE)) or roomcoords.y not in list(
-            range(LABSIZE)):
-        return False
-    return True
 
 
 class LabyrinthManager:
@@ -28,7 +19,6 @@ class LabyrinthManager:
     - difficulty_level
     - boss_pos: Coord
     - steve_pos: Coord
-    - posscoords: list[int]
 
     -- METHODS --
     + get_room() -> Room
@@ -40,42 +30,32 @@ class LabyrinthManager:
     + can_move_here() -> bool
    """
 
-    def __init__(self, labyrinth: list[list["Room"]]):
+    def __init__(self, labyrinth: Maze):
         self.lab = labyrinth
         self.difficulty_level = None
         self.boss_pos = Coord(9, 9)  # Decided upon generation
         self.steve_pos = Coord(0, 0)  # Decided upon generation
-        self.posscoords = list(range(LABSIZE))
 
     def get_room(self, coord: Coord) -> "Room":
         """Returns the room at the given coordinates"""
-        return self.lab[coord.x][coord.y]
+        return self.lab.get(coord)
 
     def set_room(self, coord: Coord, room: "Room") -> None:
         """Returns the room at the given coordinates"""
-        self.lab[coord.x][coord.y] = room
+        self.lab.set(coord, room)
 
     def layout(self) -> str:
         outputstr = ""
-        for y in range(LABSIZE):
+        for y in range(self.lab.y_size):
             fulltopstr = ""
             fullmidstr = ""
             fullbottomstr = ""
-            for x in range(LABSIZE):
-                room = self.get_room(Coord(x, LABSIZE - y - 1))
+            for x in range(self.lab.x_size):
+                room = self.get_room(Coord(x, self.lab.y_size - y - 1))
                 N, S, E, W = room.get_neighbours()
-                if N:
-                    topstr = " || "
-                else:
-                    topstr = "    "
-                if S:
-                    bottomstr = " || "
-                else:
-                    bottomstr = "    "
-                if W:
-                    midstr = "="
-                else:
-                    midstr = " "
+                topstr = " || " if N else "    "
+                bottomstr = " || " if S else "    "
+                midstr = "=" if W else " "
                 if room.steve_ishere():
                     midstr += "S"
                 else:
@@ -124,7 +104,7 @@ class LabyrinthManager:
         1. There is no wall between this room and the neighbour.
         2. the coordinates are within the range of valid coordinates.
         """
-        assert valid_coords(this_coords)
+        assert self.lab.valid_coords(this_coords)
         thisroom = self.get_room(this_coords)
         return thisroom.dir_is_accessible(direction)
 

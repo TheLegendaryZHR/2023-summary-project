@@ -131,3 +131,58 @@ cardinal = {
     "EAST": Coord(0, 1),
     "WEST": Coord(0, -1)
 }
+
+
+def roomgrid(x_size: int, y_size: int) -> list[list[Room]]:
+    """Generate a grid of rooms with dimensions x-by-y"""
+    grid = []
+    for x in range(x_size):
+        grid.append([])
+        for y in range(y_size):
+            grid[x].append(Room(Coord(x, y)))
+    return grid            
+
+
+class Maze:
+    """Encapsulates data for a maze layout.
+
+    Attributes
+    ----------
+    + x_size: int
+    + y_size: int
+    - lab: list[list[Room]]
+
+    Methods
+    -------
+    + get(coord: Coord) -> Room
+    + set(coord: Coord, room: Room) -> None
+    + valid_coords(coord: Coord) -> bool
+    """
+    def __init__(self, x_size: int, y_size: int) -> None:
+        assert x_size > 1
+        assert y_size > 1
+        self.x_size = x_size
+        self.y_size = y_size
+        self.lab = roomgrid(x_size, y_size)
+
+    def __repr__(self) -> str:
+        return f"Maze(x_size={self.x_size}, y_size={self.y_size})"
+
+    def valid_coords(self, coord: Coord) -> bool:
+        """Check if the given coord is valid within the maze"""
+        if not (0 <= coord.x < self.x_size):
+            return False
+        if not (0 <= coord.y < self.y_size):
+            return False
+        return True
+
+    def get(self, coord: Coord) -> "Room":
+        """Returns the room at the given coordinates"""
+        return self.lab[coord.x][coord.y]
+
+    def set(self, coord: Coord, room: "Room") -> None:
+        """Returns the room at the given coordinates"""
+        assert isinstance(room, Room)
+        self.lab[coord.x][coord.y] = room
+
+ 

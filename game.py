@@ -2,6 +2,7 @@
 import random
 
 import data
+from generator import LabyrinthGenerator
 import text
 
 NORTH = "NORTH"
@@ -10,15 +11,18 @@ EAST = "EAST"
 WEST = "WEST"
 
 
+LABSIZE = 10
+
+
 class MUDGame:
     """This class encapsulates data for the main game implementation."""
 
     def __init__(self) -> None:
         self.gameover = False  # default
         self.won = False  # default
-        generator = data.LabyrinthGenerator()
+        generator = LabyrinthGenerator(x_size=LABSIZE, y_size=LABSIZE)
         generator.generate()
-        labyrinth = generator.get_lab()
+        labyrinth = generator.get_maze()
         self.maze = data.LabyrinthManager(labyrinth)
         self.steve = data.Steve()
         self.steve_path = []

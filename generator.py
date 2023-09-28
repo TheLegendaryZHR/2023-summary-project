@@ -1,59 +1,43 @@
 import random
 
-from location import Coord, Room
+from maze import cardinal, Coord, Maze, Room
 
 
 class LabyrinthGenerator:
     """Generates a labyrinth for the game.
     
     -- ATTRIBUTES --
-    - lab: list[list[Room]]
+    - maze: Maze
     
     -- METHODS --
     + generate(self) -> None
+    + get_maze(self) -> Maze
     - generate_place_steve_boss() -> None:
     - generate_link_rooms(room1coords: list, room2coords: list) -> None:
     - generate_rooms_connected() -> bool:
    """
 
-    def __init__(self):
-        self.lab = []
-        for _ in range(LABSIZE):
-            self.lab.append([None] * LABSIZE)
+    def __init__(self, x_size: int, y_size: int):
+        self.maze = Maze(x_size, y_size)
+        self.generate()
 
-    def get_room(self, coord: Coord) -> "Room":
-        """Returns the room at the given coordinates"""
-        return self.lab[coord.x][coord.y]
-
-    def set_room(self, coord: Coord, room: "Room") -> None:
-        """Returns the room at the given coordinates"""
-        self.lab[coord.x][coord.y] = room
-
-    def get_lab(self) -> list[list["Room"]]:
-        """Return the generated lab"""
-        return self.lab
+    def get_maze(self) -> Maze:
+        """Return the generated maze"""
+        return self.maze
 
     def generate(self) -> None:
-        """Generates a maze without walls"""
-        for x in range(LABSIZE):
-            for y in range(LABSIZE):
-                coord = Coord(x, y)
-                self.set_room(coord, Room(coord))
-        self._generate_nowalls()
-
-    def _generate_nowalls(self) -> None:
         """Helper method for the generate() method.
         Makes sure all rooms are connected to all adjacent rooms 
         in the labyrinth.
         """
-        for x in range(LABSIZE):
-            for y in range(LABSIZE):
+        for x in range(self.maze.x_size):
+            for y in range(self.maze.y_size):
                 here = Coord(x, y)
                 for direction in cardinal:
                     there = here.add(cardinal[direction])
-                    if valid_coords(there):
-                        this = self.get_room(here)
-                        that = self.get_room(there)
+                    if self.maze.valid_coords(there):
+                        this = self.maze.get(here)
+                        that = self.maze.get(there)
                         this.connect_to(direction, that)
 
     def generate_random(self) -> None:
@@ -78,10 +62,10 @@ class LabyrinthGenerator:
         """
         # self.difficulty_level = difficulty_level
         # put in empty rooms
-        for x in range(LABSIZE):
-            for y in range(LABSIZE):
+        for x in range(self.maze.x_size):
+            for y in range(self.maze.y_size):
                 coord = Coord(x, y)
-                self.set_room(coord, Room(coord))
+                self.maze.set(coord, Room(coord))
         # choose location for steve and boss
         self._generate_place_steve_boss()
         # connecting all the rooms in a maze-like fashion
@@ -99,28 +83,28 @@ class LabyrinthGenerator:
           be chosen as startroom. the surrounding 64 rooms can be chosen as rooms.
         - Of the 64 rooms nearing the far sides of the labyrinth, one room is chosen
           at random.
-        - This means that LABSIZE cannot be too small, or the generation may break.
-          ie LABSIZE cannot be less than 4.
+        - This means that size cannot be too small, or the generation may break.
+          ie size cannot be less than 4.
 
         How bossroom is chosen:
-        - e.g. LABSIZE is set to 10 and startroom coords are [1, 7]
+        - e.g. size is set to 10 and startroom coords are [1, 7]
         - bossroom is at the opposite of the labyrinth at [8, 2]
 
         Startroom will be remembered throughout the game, the starting position
         of the boss will not be remembered. 
         """
         # choose position of Start room randomly
-        n = LABSIZE // 4
-        n = random.randint(-n, n - 1) % LABSIZE
-        m = random.randint(0, LABSIZE - 1)
+        n = self.maze.x_size // 4
+        n = random.randint(-n, n - 1) % self.maze.x_size
+        m = random.randint(0, self.maze.x_size - 1)
         nm = [n, m]
         random.shuffle(nm)
         steve_coord = Coord(nm[0], nm[1])
         self.steve_pos = steve_coord
 
         # choose position of Monster room opposite to where steve is
-        boss_x = LABSIZE - 1 - (steve_coord.x % LABSIZE)
-        boss_y = LABSIZE - 1 - (steve_coord.y % LABSIZE)
+        boss_x = self.maze.x_size - 1 - (steve_coord.x % self.maze.x_size)
+        boss_y = self.maze.y_size - 1 - (steve_coord.y % self.maze.y_size)
         boss_coord = Coord(boss_x, boss_y)
         self.boss_pos = boss_coord
         assert not boss_coord.is_same(steve_coord)
@@ -135,10 +119,10 @@ class LabyrinthGenerator:
         # linearly search through the grid to find unconnected rooms, and connects them.
         # Stops when all are connected.
         while unconnected != 0:
-            for x in range(LABSIZE):
-                for y in range(LABSIZE):
+            for x in range(self.maze.x_size):
+                for y in range(self.maze.y_size):
                     coord = Coord(x, y)
-                    room = self.get_room(coord)
+                    room = self.maze.get(coord)
                     if not room.is_connected_tostart:
                         self._generate_force_connect(coord)
             unconnected = self._generate_count_unconnected_rooms()
@@ -152,7 +136,7 @@ class LabyrinthGenerator:
         random.shuffle(newdirlist)
         for i in range(4):
             neighbourcoords = roomcoords.add(newdirlist[i])
-            if valid_coords(neighbourcoords):
+            if self.maze.valid_coords(neighbourcoords):
                 self._generate_link_rooms(
                     roomcoords, neighbourcoords)  # forcing a connection.
 
@@ -160,12 +144,12 @@ class LabyrinthGenerator:
         """Rules for a this room with coordinates roomcoords to be linked to its
         neighbour that is attempting to link to this:
         
-        1. It must have valid coords, within the appropriate range from 0 to LABSIZE - 1
+        1. It must have valid coords, within the appropriate range from 0 to self.maze.x_size - 1
         2. It must not already be connected to the start.
         """
-        if not valid_coords(roomcoords):
+        if not self.maze.valid_coords(roomcoords):
             return False
-        room_object = self.get_room(roomcoords)
+        room_object = self.maze.get(roomcoords)
         if room_object.is_connected_tostart:  # has access
             return False
         return True
@@ -185,7 +169,7 @@ class LabyrinthGenerator:
         
         """
         # current room should already be connected
-        thisroom = self.get_room(thisroomcoords)  # object thisroom object
+        thisroom = self.maze.get(thisroomcoords)  # object thisroom object
         assert thisroom.is_connected_tostart
         # iteration through N, S, E, W:
         # checking whether they are linkable by rules
@@ -206,12 +190,12 @@ class LabyrinthGenerator:
     def _generate_link_rooms(self, room1coords: Coord,
                              room2coords: Coord) -> None:
         # validation
-        assert valid_coords(room1coords) and valid_coords(room2coords)
+        assert self.maze.valid_coords(room1coords) and self.maze.valid_coords(room2coords)
         assert not room1coords.is_same(room2coords)
         assert room1coords.is_adjacent(room2coords)
         # linking rooms
-        room1 = self.get_room(room1coords)
-        room2 = self.get_room(room2coords)
+        room1 = self.maze.get(room1coords)
+        room2 = self.maze.get(room2coords)
         if room1.is_connected_tostart or room2.is_connected_tostart:
             room1.is_connected_tostart = True
             room2.is_connected_tostart = True
