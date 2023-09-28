@@ -430,6 +430,10 @@ class MUDGame:
         """
         print(text.option_invalid)
 
+    def visit(self, coord: Coord) -> None:
+        """Treat the coord as visited"""
+        self.visited.append(coord)
+
     def run(self):
         """Run the game"""
         # starting interface
@@ -439,9 +443,8 @@ class MUDGame:
         # Main game loop
         while not self.game_is_over():
             print('\n')
-
             # append the current location to visited
-            self.visited.append(self.maze.get_current_pos)
+            self.visit(self.maze.get_current_pos)
 
             # print steve's status
             self.show_status()
