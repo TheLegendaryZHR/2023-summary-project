@@ -1,1 +1,14 @@
-[{"name": "Zombie", "base_hp": 20, "base_atk": 5},{"name": "Creeper", "base_hp": 5, "base_atk": 15}]
+[
+    {
+        "name": "Zombie",
+        "base_hp": 20,
+        "base_atk": 5,
+        "attacks": ["Attack"]
+    },
+    {
+        "name": "Creeper",
+        "base_hp": 5,
+        "base_atk": 15,
+        "attacks": ["Explode"]
+    }
+]
