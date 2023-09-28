@@ -3,18 +3,26 @@
         "name": "Zombie",
         "base_hp": 20,
         "base_atk": 5,
-        "actions": ["Attack"]
+        "actions": {
+            "Attack": {"value": 20}
+        }
     },
     {
         "name": "Creeper",
         "base_hp": 5,
         "base_atk": 15,
-        "attacks": ["Explode"]
+        "actions": {
+            "Explode": {}
+        }
     },
     {
         "name": "King Warden",
         "base_hp": 100,
         "base_atk": 10,
-        "attacks": ["Attack", "Heal", "Sonic Boom"]
+        "actions": {
+            "Attack": {"value": 10},
+            "Heal": {"value": 15},
+            "Sonic Boom": {}
+        }
     }
 ]
