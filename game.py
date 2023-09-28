@@ -315,13 +315,20 @@ class MUDGame:
                     n = 0
                     while not self.isvalid_heal(heal_option):
                         n += 1
-                        self.steve.display_inventory()
+                        if self.steve.inventory.is_empty():
+                            print(text.inventory_empty + "\n")
+                        else:
+                            print("\nYou have:\n")
+                            self.steve.display_inventory()
                         if n > 1:
                             self.invalid_opt()
                         heal_option = input(text.heal_prompt)
                         self.isvalid_heal(heal_option)
                     heal_option = int(heal_option) - 1
+                    prevhp = self.steve.health
                     self.steve.eat(heal_option)
+                    print(text.heal_report(self.steve.health - prevhp, self.steve.health))
+                    print(text.damage_report(prevhp - self.steve.health, self.steve.health))
                     print(text.heal_success)
             #Steve endturn
             damage = creature.random_move()

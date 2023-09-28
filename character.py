@@ -116,10 +116,6 @@ class Steve:
         return f"Steve has {self.health} HP."
 
     def display_inventory(self) -> None:
-        if self.inventory.is_empty():
-            print(text.inventory_empty + "\n")
-            return
-        print("\nYou have:\n")
         item_slots = self.inventory.items()
         for line in self.inventory.format_contents(item_slots):
             print(line)
@@ -183,13 +179,10 @@ class Steve:
     def heal_health(self, change: int) -> None:
         if change == 0:
             return None
-        prevhp = self.health
         if change > 0:
             self.health = min(self.health + change, 50)
-            print(text.heal_report(self.health - prevhp, self.health))
             return None
         self.health = max(self.health + change, 0)
-        print(text.damage_report(prevhp - self.health, self.health))
         return None
 
     def get_defence(self) -> int:
