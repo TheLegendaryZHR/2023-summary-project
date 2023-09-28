@@ -222,22 +222,17 @@ class MUDGame:
         labyrinth = generator.get_maze()
         self.maze = LabyrinthManager(labyrinth)
         self.steve = create.steve()
-        self.steve_path = []
+        self.visited = []
         self.boss = create.creature_from_name(BOSS)
 
-    def introduce(self) -> None:
-        """
-        Starting interface of the game
-        """
-        username = ''
-        n = 0
-        while username.strip(' ') == '':
-            n += 1
-            if n > 1:
+    def prompt_username(self) -> str:
+        """Prompt the player for username"""
+        while True:
+            username = input(text.username_prompt).strip()
+            if username == "":
                 print(text.username_error)
-            username = input(text.username_prompt)
-
-        print(text.intro(username))
+            else:
+                return username
 
     def game_is_over(self) -> bool:
         """
@@ -436,16 +431,17 @@ class MUDGame:
         print(text.option_invalid)
 
     def run(self):
-
+        """Run the game"""
         # starting interface
-        self.introduce()
+        username = self.prompt_username()
+        print(text.intro(username))
 
-        # while loop continue until steve or boss die
+        # Main game loop
         while not self.game_is_over():
             print('\n')
 
-            # append the current location to steve_path
-            self.steve_path.append(self.maze.get_current_pos)
+            # append the current location to visited
+            self.visited.append(self.maze.get_current_pos)
 
             # print steve's status
             self.show_status()
