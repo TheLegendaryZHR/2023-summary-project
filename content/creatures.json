@@ -10,5 +10,11 @@
         "base_hp": 5,
         "base_atk": 15,
         "attacks": ["Explode"]
+    },
+    {
+        "name": "King Warden",
+        "base_hp": 100,
+        "base_atk": 10,
+        "attacks": ["Attack", "Heal", "Sonic Boom"]
     }
 ]

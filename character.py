@@ -1,6 +1,7 @@
 import random
 from typing import Container, Generic, Optional, Type, TypeVar
 
+from action import Action
 import data
 import text
 
@@ -216,21 +217,27 @@ class Steve:
 class Creature:
     """
     -- ATTRIBUTES --
-    name: name
-    attack: damage stat
-    hitpoints: current health
-    maxhp: highest possible health
+    + name: str
+    + maxhp: int
+    + attack: int
+    + hitpoints: int
+    - actions: list[Action]
+    
     -- METHODS --
     get_attack
     get_health
     """
 
-    def __init__(self, name: str, maxhp: int, attack: int):
+    def __init__(self,
+                 name: str,
+                 maxhp: int,
+                 attack: int,
+                 actions: Optional[list[Action]] = None):
         self.name = name
-        maxhp = self._generate_maxhp(maxhp, turn)
-        self.hitpoints = maxhp
-        self.attack = self._generate_attack(attack, turn)
         self.maxhp = maxhp
+        self.attack = attack
+        self.hitpoints = maxhp
+        self.actions = actions
 
     def __str__(self):
         return f"Name: {self.name}, HP:{self.hitpoints}/{self.maxhp}"
