@@ -290,13 +290,6 @@ class MUDGame:
             menu = '1. Attack \n2. Heal'
         print(menu)
 
-    def prompt_player(self) -> int:
-        """
-        Prompt player to choose option 1 or 2.
-        Returns 1 or 2.
-        """
-        return prompt_valid_choice_inline(["1", "2"], 'Please choose option', 'Please enter a valid number')
-
     def isvalid(self, opt) -> bool:
         """
         Validate player's choice when given 2 options.
@@ -329,7 +322,7 @@ class MUDGame:
                     continue
             else:
                 self.show_options('battle')
-                battle_option = self.prompt_player()
+                battle_option = int(prompt_valid_choice_inline(["1", "2"], 'Please choose option', 'Please enter a valid number'))
                 if battle_option == '1':
                     #attack
                     damage = self.steve.get_attack()
@@ -441,7 +434,7 @@ class MUDGame:
                 self.show_options('creature')
 
                 # prompt player to take actions
-                option = self.prompt_player()
+                option = int(prompt_valid_choice_inline(["1", "2"], 'Please choose option', 'Please enter a valid number'))
 
                 # battle if player choose option 1
                 if option == '1':
@@ -494,7 +487,7 @@ class MUDGame:
                         "Do you want to pick it up?"
                     ))
                     self.show_options('item')
-                    item_choice = self.prompt_player()
+                    item_choice = int(prompt_valid_choice_inline(["1", "2"], 'Please choose option', 'Please enter a valid number'))
                     if item_choice == '1':
                         self.steve.take_item(item, 1)
             else:
