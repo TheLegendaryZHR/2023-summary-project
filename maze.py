@@ -88,14 +88,6 @@ class Room:
         # makes assumptions that {direction} of this room is neighbour.
         self.set_direction(direction, room)
 
-    def get_creature(self) -> "Creature":
-        """Getter method for creature attribute"""
-        return self.creature
-
-    def get_item(self) -> "Item":
-        """Getter method for item attribute"""
-        return self.item
-
     def get_direction(self, dir_name: str) -> "Room | None":
         if dir_name in cardinal:
             return self.connected_rooms[dir_name]

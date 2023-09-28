@@ -285,7 +285,7 @@ class MUDGame:
         Battle continues until one dies.
         """
         room = self.current_room()
-        creature = room.get_creature()
+        creature = room.creature
         print(f"You have encountered the {creature.get_name()}!")
         while not self.steve.isdead() and not creature.isdead():
             print(self.steve)  # show HP
@@ -350,24 +350,6 @@ class MUDGame:
         if heal_option in valid_opt:
             return True
         return False
-
-    def creature_encountered(self) -> bool:
-        """
-        Returns True when creature is found in the room.
-        """
-        room = self.current_room()
-        if room.get_creature() is None:
-            return False
-        return True
-
-    def item_found(self) -> bool:
-        """
-        Returns True if item is found in the room.
-        """
-        room = self.current_room()
-        if room.get_item() is None:
-            return False
-        return True
 
     def show_winscreen(self) -> None:
         """
@@ -436,11 +418,11 @@ class MUDGame:
         # Main game loop
         while not self.game_is_over():
             print('\n')
-            self.visit(self.maze.current_coord)
+            self.visit(self.maze.current_coord())
             print(self.steve.status())
 
             # creature is found in the room
-            if self.creature_encountered():
+            if self.current_room().creature:
 
                 # show player action options
                 self.show_options('creature')
@@ -479,9 +461,8 @@ class MUDGame:
             # item can be 'Armor', 'Food', 'Weapon'
             # armor and weapon item will be automatically picked up
             # player can choose to pick up food item or not
-            if self.item_found():
-                room = self.current_room()
-                item = room.get_item()
+            if self.current_room().item:
+                item = self.current_room().item
                 if isinstance(item, data.Weapon):
                     self.steve.equip_weapon(item)
                     print(text.found_item(
