@@ -333,7 +333,8 @@ class MUDGame:
                     print(text.damage_report(prevhp - self.steve.health, self.steve.health))
                     print(text.heal_success)
             #Steve endturn
-            damage = creature.random_move()
+            action = creature.act()
+            damage = action.do()
             self.steve.take_damage(damage)
             if damage == 0:
                 print(text.creature_selfheal(creature.name))

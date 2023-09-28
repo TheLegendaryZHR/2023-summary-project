@@ -224,6 +224,7 @@ class Creature:
     - actions: list[Action]
     
     -- METHODS --
+    + take_damage(dmg: int) -> None
     get_attack
     get_health
     """
@@ -232,12 +233,15 @@ class Creature:
                  name: str,
                  maxhp: int,
                  attack: int,
-                 actions: Optional[list[Action]] = None):
+                 actions: list[Action]):
         self.name = name
         self.maxhp = maxhp
         self.attack = attack
         self.hitpoints = maxhp
-        self.actions = actions
+        self.actions: dict[str, Action] = {
+            action.name: action
+            for action in actions
+        }
 
     def __str__(self):
         return f"Name: {self.name}, HP:{self.hitpoints}/{self.maxhp}"
@@ -270,13 +274,11 @@ class Creature:
         """Updates health based on the damage the creature suffered"""
         self.hitpoints = max(0, self.hitpoints - damage)
 
-    def random_move(self) -> int:
-        """Chooses randomly from the following attack moves that the creature can make:
-        
-        1. normal attack
-        
+    def act(self, choice: str) -> Action:
+        """Chooses an action from available actions.
+        If not overridden, will choose a random action.
         """
-        return self.get_attack()
+        return random.choice(self.actions)
 
     def isdead(self) -> bool:
         """Tells whether Creature is dead or not. Returns True if yes, else False."""
@@ -285,54 +287,26 @@ class Creature:
         return False
 
 
-class Creeper(Creature):
+class HealingCreature(Creature):
+    """A creature that is capable of healing.
 
-    def _generate_attack(self, attack: int, turn_number: int) -> int:
-        random_letter = random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        print(text.creeper_prompt)
-        time.sleep(2)
-        start_time = time.time()
-        inp = input(text.creeper_quickevent(random_letter))
-        print(text.creeper_explode)
-        self.hitpoints = 0
-        if inp.upper() == random_letter and time.time() - start_time <= 1.8:
-            print("\n" + text.creeper_dodge_success)
-            return None
-        elif inp.upper() != random_letter:
-            print("\n" + text.creeper_dodge_failure)
-        elif (time.time() - start_time) > 1.8:
-            print("\n" + text.creeper_dodge_slow)
-        attack = int((attack) * ((turn_number / 10) + 1) *
-                     (random.randint(90, 110) / 100))
-        return attack
-
-
-class Boss(Creature):
+    This creature must have Heal in its actions.
     """
-    -- ATTRIBUTES --
-    
-    -- METHODS --
-    """
+    def __init__(self,
+                 name: str,
+                 maxhp: int,
+                 attack: int,
+                 actions: list[Action]) -> None:
+        super().__init__(name, maxhp, attack, actions)
+        assert "Heal" in self.actions
 
-    def __init__(self):
-        super().__init__("King Warden", 100, 10)
-
-    def heal(self) -> None:
-        """One of the moves that the boss can make
-        Deals boss by an amount"""
-        heal = random.randint(10, 20)
-        self.hitpoints = min(self.hitpoints + heal, self.maxhp)
-
-    def sonic_boom(self) -> bool:
-        """Unimplemented attack that would make the battle more interesting"""
-        raise NotImplementedError
-
-    def random_move(self) -> int:
+    def act(self) -> Action:
         """If current health gt 50 HP, returns attack damage.
         If current health lte 50 HP, 30 percent chance it heals itself, and does no damage. Otherwise, returns attack damage."""
-        if self.hitpoints > 50:
-            return self.attack
-        if random.randint(0, 100) <= 30:
-            self.heal()
-            return 0
-        return self.attack
+        if self.hitpoints <= 50:
+            if random.randint(0, 100) <= 30:
+                return self.actions["Heal"]
+        action = None
+        while not isinstance(action, Attack):
+            action = random.choice(self.actions)
+        return action

@@ -131,4 +131,6 @@ def get(name: str) -> Type[Action]:
         return Explode
     if name == "Heal":
         return Heal
+     if name == "Sonic Boom":
+        return SonicBoom
     raise ValueError(f"{name}: no such action")

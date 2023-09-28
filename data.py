@@ -72,8 +72,12 @@ def random_creature() -> "Creature":
     creature_data = random.choice(creature_list)
     if creature_data["name"] == "Creeper":
         #remove creeper for now
-        return Creature(creature_data["name"], creature_data["base_hp"],
-                        creature_data["base_atk"])
+        return Creature(
+            creature_data["name"],
+            creature_data["base_hp"],
+            creature_data["base_atk"],
+            action.get(creature_data["actions"])
+        )
     else:
         return Creature(creature_data["name"], creature_data["base_hp"],
                         creature_data["base_atk"])

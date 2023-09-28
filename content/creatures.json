@@ -3,7 +3,7 @@
         "name": "Zombie",
         "base_hp": 20,
         "base_atk": 5,
-        "attacks": ["Attack"]
+        "actions": ["Attack"]
     },
     {
         "name": "Creeper",
