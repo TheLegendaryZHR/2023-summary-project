@@ -2,6 +2,7 @@
 
 Factory functions for items, creatures
 """
+import random
 
 import action
 import character
@@ -69,9 +70,10 @@ def random_item() -> data.Item:
         return food(random.choice(data.food_data))
     elif item_type == data.Weapon:
         return weapon(random.choice(data.weapon_data))
+    else:
+        raise ValueError
 
-def random_creature() -> "Creature":
+def random_creature() -> character.Creature:
     """returns a randomly generated creature"""
-    creatures = []
     creature_data = random.choice(character.creature_data)
     return creature(creature_data)
