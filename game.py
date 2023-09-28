@@ -253,7 +253,9 @@ class MUDGame:
         )
 
     def move_steve(self, direction: Coord) -> None:
-        assert self.maze.can_move_here(self.steve_pos, direction)
+        """Move Steve in the specified direction.
+        The direction is assumed to have been validated.
+        """
         self.steve_pos = self.steve_pos.add(direction)
 
     def game_is_over(self) -> bool:
@@ -383,19 +385,18 @@ class MUDGame:
         print(text.game_lose)
         print(f"Score: {random.randint(0, 10000)}")
 
-    def movesteve(self) -> None:
-        """
-        Move Steve to another room when no item or creatures left in the current room.
-        """
+    def prompt_direction(self) -> str:
+        """Prompt player for a valid direction to move."""
         current_location = self.maze.current_coord()
         available_dir = []
         for dir_name, dir_coord in cardinal.items():
             if self.maze.can_move_here(current_location, dir_coord):
                 available_dir.append(dir_name)
-        choice = prompt_valid_choice(available_dir,
+        direction = prompt_valid_choice(available_dir,
                                      text.move_prompt,
                                      text.option_invalid)
-        return int(choice)
+        return direction
+
         self.maze.move_steve(cardinal[available_dir[choice - 1]])
 
     def moveboss(self) -> None:
@@ -493,7 +494,8 @@ class MUDGame:
                 print(text.no_item)
 
             # move steve to the next room according to player's input, 30% chance of moving boss to adjacent room
-            self.movesteve()
+            direction = self.prompt_direction()
+            self.move_steve(direction)
             if random.randint(1, 100) <= 30:
                 self.moveboss()
 
