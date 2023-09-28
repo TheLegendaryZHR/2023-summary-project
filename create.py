@@ -8,9 +8,6 @@ import character
 import data
 
 
-
-
-
 def _action(name: str, data_: dict) -> action.Action:
     """Factory function for Action"""
     Action = action.get(name)

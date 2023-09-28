@@ -6,7 +6,7 @@ from action import Action
 import data
 import text
 
-DEFAULT_HITPOINTS = 50
+
 I = TypeVar("I")
 
 
@@ -210,7 +210,7 @@ class Steve:
         return False
 
     def take_damage(self, damage: int) -> None:
-        """Updates hitpoints attribute based on how much damage is dealt."""
+        """Updates health attribute based on how much damage is dealt."""
         assert isinstance(damage, int)
         damage = int(damage * ((100 - self.get_defence()) / 100))
         self.health = max(0, self.health - damage)
@@ -222,7 +222,7 @@ class Creature:
     + name: str
     + maxhp: int
     + attack: int
-    + hitpoints: int
+    + health: int
     - actions: list[Action]
     
     -- METHODS --
@@ -239,14 +239,14 @@ class Creature:
         self.name = name
         self.maxhp = maxhp
         self.attack = attack
-        self.hitpoints = maxhp
+        self.health = maxhp
         self.actions: dict[str, Action] = {
             action.name: action
             for action in actions
         }
 
     def __str__(self):
-        return f"Name: {self.name}, HP:{self.hitpoints}/{self.maxhp}"
+        return f"Name: {self.name}, HP:{self.health}/{self.maxhp}"
 
     def _generate_maxhp(self, maxhp: int, turn_number: int) -> int:
         maxhp = int(
@@ -269,12 +269,12 @@ class Creature:
         return self.attack
 
     def get_health(self):
-        """Getter for hitpoints attribute"""
-        return self.hitpoints
+        """Getter for health attribute"""
+        return self.health
 
     def take_damage(self, damage: int) -> None:
         """Updates health based on the damage the creature suffered"""
-        self.hitpoints = max(0, self.hitpoints - damage)
+        self.health = max(0, self.health - damage)
 
     def act(self, choice: str) -> Action:
         """Chooses an action from available actions.
@@ -284,7 +284,7 @@ class Creature:
 
     def isdead(self) -> bool:
         """Tells whether Creature is dead or not. Returns True if yes, else False."""
-        if self.hitpoints <= 0:
+        if self.health <= 0:
             return True
         return False
 
@@ -305,7 +305,7 @@ class HealingCreature(Creature):
     def act(self) -> Action:
         """If current health gt 50 HP, returns attack damage.
         If current health lte 50 HP, 30 percent chance it heals itself, and does no damage. Otherwise, returns attack damage."""
-        if self.hitpoints <= 50:
+        if self.health <= 50:
             if random.randint(0, 100) <= 30:
                 return self.actions["Heal"]
         action = None

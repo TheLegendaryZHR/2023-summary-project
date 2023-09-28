@@ -73,7 +73,6 @@ class Explode(Attack):
         start_time = time.time()
         inp = input(text.creeper_quickevent(random_letter))
         print(text.creeper_explode)
-        self.hitpoints = 0
         if inp.upper() == random_letter and time.time() - start_time <= 1.8:
             print("\n" + text.creeper_dodge_success)
             return 0
