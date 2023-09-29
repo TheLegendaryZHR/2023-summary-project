@@ -124,7 +124,7 @@ class LabyrinthManager:
         if direction.is_zero():
             return (0, "NONE")
         r = direction.length()
-        basic = abs(math.atan(coord.y / coord.x))
+        angle = direction.bearing()
         if coord.y > 0:
             if coord.x > 0:
                 theta = basic  # 1st quadrant

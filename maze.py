@@ -31,6 +31,11 @@ class Coord:
         """Returns a Coord that is the sum of self and coord"""
         return Coord(self.x + coord.x, self.y + coord.y)
 
+    def bearing(self) -> float:
+        # atan2 gives an angle (in radians) between -PI and PI
+        angle = math.atan2(self.y, self.x)
+        return angle
+
     def is_adjacent(self, coord: "Coord") -> bool:
         """Checks if coord is directly N, S, E, or W of self.
         Returns True if yes, otherwise False.
