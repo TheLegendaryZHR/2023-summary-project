@@ -34,7 +34,17 @@ def prompt_valid_choice(options: list[Any],
         elif not 0 < int(choice) <= len(options):
             print(errormsg)
     return options[int(choice) - 1]
-    
+
+
+def dice_roll(odds: float) -> bool:
+    """Returns the result of a dice roll with the given odds.
+    Arguments
+    ---------
+    + odds: float
+      a value between 0 to 1.0
+    """
+    return random.random() <= odds
+
 
 class LabyrinthManager:
     """This class encapsulates access to the labyrinth grid
@@ -82,8 +92,7 @@ class LabyrinthManager:
         Calculates which direction, N, S, E, W, NE, NW, SE, SW
         displays a message based on distance and direction.
         """
-        i = random.randint(0, 100)
-        if i <= 20:
+        if dice_roll(20/100):
             print(random.choice(text.clues_noclue))
             return None
         r, dirstr = self._r_dir_calc(self.steve_pos, self.boss_pos)
@@ -93,8 +102,7 @@ class LabyrinthManager:
         if r < 3:
             print(random.choice(text.clues_shortrange))
         elif r < 6:
-            i = random.randint(1, 100)
-            if i == 1:
+            if dice_roll(1/100):
                 print(text.easter_egg)
             else:
                 print(random.choice(text.clues_mediumrange))
@@ -331,9 +339,8 @@ class MUDGame:
         self.handle_heal(steve, food.hprestore)
 
     def handle_escape(self, steve: character.Steve, creature: character. Creature) -> None:
-        odds = random.randint(1, 100)
         # Fail to escape
-        if odds > 40:
+        if dice_roll(40/100):
             print(text.escape_failure)
             self.enter_battle(steve, creature)
         # Succeeded in escaping
@@ -427,7 +434,7 @@ class MUDGame:
                 self.steve.equip_armor(room.item)
                 print(text.found_item(
                     "stronger armor",
-                    f'It blocks {item.get_defence()} damage now!'
+                    f'It blocks {room.item.get_defence()} damage now!'
                 ))
             else:
                 print(text.found_item(
@@ -440,7 +447,7 @@ class MUDGame:
             # Move steve and boss
             direction = self.prompt_direction()
             self.move_steve(direction)
-            if random.randint(1, 100) <= 30:
+            if dice_roll(30/100):
                 self.move_boss()
 
         self.game_end()
