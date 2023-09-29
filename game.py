@@ -86,7 +86,7 @@ class LabyrinthManager:
         Calculates which direction, N, S, E, W, NE, NW, SE, SW
         displays a message based on distance and direction.
         """
-        displacement = self._sb_xy_distance()
+        displacement = self.steve_pos.direction_of(self.boss_pos)
         if displacement.is_zero():
             # They are in the same room, a clue doesn't need to be given LOL
             return None
@@ -115,7 +115,7 @@ class LabyrinthManager:
         Finds r and theta using x and y (polar coordinates system)
         returns r and direction
         """
-        displacement = self._sb_xy_distance()
+        displacement = self.steve_pos.direction_of(self.boss_pos)
         if displacement.is_zero():
             return None
         r = math.sqrt((coord.x**2) + (coord.y**2))  # Pythagorean theorem
@@ -157,10 +157,6 @@ class LabyrinthManager:
             upperbound += PI / 4
         assert dirstr is not None
         return r, dirstr
-
-    def _sb_xy_distance(self) -> Coord:
-        """returns x, y displacement of boss from steve."""
-        return self.steve_pos.direction_of(self.boss_pos)
 
 
 class MUDGame:
