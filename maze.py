@@ -171,10 +171,10 @@ class Room(Side):
 
 
 cardinal = {
-    "NORTH": Coord(0, 1),
-    "SOUTH": Coord(0, -1),
-    "EAST": Coord(0, 1),
-    "WEST": Coord(0, -1)
+    "NORTH": Coord(0, -1),
+    "SOUTH": Coord(0, 1),
+    "EAST": Coord(1, 0),
+    "WEST": Coord(-1, 0)
 }
 
 
