@@ -122,7 +122,7 @@ class Random(LabyrinthGenerator):
         boss_y = self.maze.y_size - 1 - (steve_coord.y % self.maze.y_size)
         boss_coord = Coord(boss_x, boss_y)
         self.boss_pos = boss_coord
-        assert not boss_coord.is_same(steve_coord)
+        assert boss_coord != steve_coord
 
     def _generate_maze(self, startroom_pos: Coord) -> None:
         """Links up all rooms in a maze-like fashion"""
@@ -206,7 +206,7 @@ class Random(LabyrinthGenerator):
                              room2coords: Coord) -> None:
         # validation
         assert self.maze.valid_coords(room1coords) and self.maze.valid_coords(room2coords)
-        assert not room1coords.is_same(room2coords)
+        assert room1coords != room2coords
         assert room1coords.is_adjacent(room2coords)
         # linking rooms
         room1 = self.maze.get(room1coords)

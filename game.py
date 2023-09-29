@@ -219,11 +219,11 @@ class MUDGame:
                 topstr = " || " if N else "    "
                 bottomstr = " || " if S else "    "
                 midstr = "=" if W else " "
-                if room.get_coord().is_same(self.steve_pos):
+                if room.coord == self.steve_pos:
                     midstr += "S"
                 else:
                     midstr += "/"
-                if room.get_coord().is_same(self.boss_pos):
+                if room.coord == self.boss_pos:
                     midstr += "B"
                 else:
                     midstr += "/"

@@ -40,9 +40,6 @@ class Coord:
             return True
         return False
 
-    def is_same(self, coord: "Coord") -> bool:
-        return self == coord
-
     def is_zero(self) -> bool:
         return self.x == 0 and self.y == 0
 
