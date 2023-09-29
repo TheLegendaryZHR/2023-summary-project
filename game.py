@@ -115,25 +115,8 @@ class LabyrinthManager:
         if direction.is_zero():
             return (0, "NONE")
         r = direction.length()
-        angle = direction.bearing()
-        # Positive is rightwards and downwards
-        if -PI/8 < angle <= PI/8:
-            return (r, "EAST")
-        if PI/8 < angle <= 3*PI/8:
-            return (r, "SOUTHEAST")
-        if 3*PI/8 < angle <= 5*PI/8:
-            return (r, "SOUTH")
-        if 5*PI/8 < angle <= 7*PI/8:
-            return (r, "SOUTHWEST")
-        if angle <= -7*PI/8 or angle > 7*PI/8:
-            return (r, "WEST")
-        if -7*PI/8 < angle <= -5*PI/8:
-            return (r, "NORTHWEST")
-        if -5*PI/8 < angle <= -3*PI/8:
-            return (r, "NORTH")
-        if -3*PI/8 < angle <= -PI/8:
-            return (r, "NORTHEAST")
-        raise AssertionError
+        bearing = coord1.bearing_of(coord2)
+        return (r, bearing)
 
 
 class MUDGame:

@@ -32,9 +32,35 @@ class Coord:
         return Coord(self.x + coord.x, self.y + coord.y)
 
     def bearing(self) -> float:
+        """Returns """
         # atan2 gives an angle (in radians) between -PI and PI
         angle = math.atan2(self.y, self.x)
         return angle
+
+    def bearing_of(self, coord: "Coord") -> str:
+        direction = self.direction_of(coord)
+        if direction.is_zero():
+            return "NONE"
+        angle = direction.bearing()
+        # Positive is rightwards and downwards
+        if -math.pi/8 < angle <= math.pi/8:
+            return "EAST"
+        if math.pi/8 < angle <= 3*math.pi/8:
+            return "SOUTHEAST"
+        if 3*math.pi/8 < angle <= 5*math.pi/8:
+            return "SOUTH"
+        if 5*math.pi/8 < angle <= 7*math.pi/8:
+            return "SOUTHWEST"
+        if angle <= -7*math.pi/8 or angle > 7*math.pi/8:
+            return "WEST"
+        if -7*math.pi/8 < angle <= -5*math.pi/8:
+            return "NORTHWEST"
+        if -5*math.pi/8 < angle <= -3*math.pi/8:
+            return "NORTH"
+        if -3*math.pi/8 < angle <= -math.pi/8:
+            return "NORTHEAST"
+        raise AssertionError
+
 
     def is_adjacent(self, coord: "Coord") -> bool:
         """Checks if coord is directly N, S, E, or W of self.
