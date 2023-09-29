@@ -1,6 +1,6 @@
 import random
 
-from maze import cardinal, Coord, Maze, Room
+from maze import cardinal, Coord, opposite, Maze, Room
 
 
 class LabyrinthGenerator:
@@ -266,24 +266,19 @@ class RecursiveBacktrace(LabyrinthGenerator):
         self.visited.append(coord)
 
     def dig(self, room: Room, direction: str) -> None:
-        def opposite(direction: str) -> str:
-            if direction == "NORTH":
-                return "SOUTH"
-            if direction == "SOUTH":
-                return "NORTH"
-            if direction == "EAST":
-                return "WEST"
-            if direction == "WEST":
-                return "EAST"
-            raise AssertionError
-
+        """'Dig' through a wall in the given direction
+        to join room to the next room.
+        """
         new_coord = room.coord.add(cardinal[direction])
         new_room = self.maze.get(new_coord)
-        room.set_direction(direction, new_room)
         assert new_room.get_direction(opposite(direction)).is_wall()
+        room.set_direction(direction, new_room)
         new_room.set_direction(opposite(direction), room)
 
     def explore(self, room: Room) -> None:
+        """Recursively explore the maze, digging through 
+        walls to unexplored rooms.
+        """
         self.visit(room.coord)
         choices = list(cardinal.items())
         random.shuffle(choices)

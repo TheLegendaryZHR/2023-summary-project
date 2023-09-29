@@ -4,6 +4,7 @@ This module contains classes and functions used to manage
 locations in the game.
 """
 
+
 class Coord:
     """Encapsulates a pair of 2D coordinates.
     Coordinates are represented as (x, y), with x and y being ints.
@@ -51,6 +52,7 @@ class Side:
     + is_room() -> bool
     + is_wall() -> bool
     """
+
     def is_boundary(self) -> bool:
         raise NotImplementedError
 
@@ -65,6 +67,7 @@ class Boundary(Side):
     """Represents the edges of the maze.
     There is no room on the other side.
     """
+
     def is_boundary(self) -> bool:
         return True
 
@@ -79,6 +82,7 @@ class Wall(Side):
     """Represents a wall, with a room on the other side.
     This room cannot be accessed through normal means.
     """
+
     def is_boundary(self) -> bool:
         return False
 
@@ -87,6 +91,7 @@ class Wall(Side):
 
     def is_wall(self) -> bool:
         return True
+
 
 class Room(Side):
     """
@@ -173,6 +178,18 @@ cardinal = {
 }
 
 
+def opposite(direction: str) -> str:
+    if direction == "NORTH":
+        return "SOUTH"
+    if direction == "SOUTH":
+        return "NORTH"
+    if direction == "EAST":
+        return "WEST"
+    if direction == "WEST":
+        return "EAST"
+    raise AssertionError
+
+
 def roomgrid(x_size: int, y_size: int) -> list[list[Side]]:
     """Generate a grid of rooms with dimensions x-by-y"""
     boundary = Boundary()
@@ -189,7 +206,7 @@ def roomgrid(x_size: int, y_size: int) -> list[list[Side]]:
     for y in range(y_size):
         grid[0][y].set_direction("WEST", boundary)
         grid[x_size - 1][y].set_direction("EAST", boundary)
-    return grid            
+    return grid
 
 
 class Maze:
@@ -207,6 +224,7 @@ class Maze:
     + set(coord: Coord, room: Room) -> None
     + valid_coords(coord: Coord) -> bool
     """
+
     def __init__(self, x_size: int, y_size: int) -> None:
         assert x_size > 1
         assert y_size > 1
@@ -233,5 +251,3 @@ class Maze:
         """Returns the room at the given coordinates"""
         assert isinstance(room, Room)
         self.lab[coord.x][coord.y] = room
-
- 
