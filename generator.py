@@ -249,5 +249,11 @@ class RecursiveBacktrace(LabyrinthGenerator):
     3. Repeat until it is not possible to proceed.
     4. Go back to the last room with unvisited neighbours and repeat.
     """
+    def __init__(self, x_size: int, y_size: int):
+        super().__init__(x_size, y_size)
+        self.visited = []
+        
     def generate(self) -> None:
-        pass
+        start = Coord(random.randint(0, self.maze.y_size), 0)
+        
+        

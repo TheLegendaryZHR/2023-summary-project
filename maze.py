@@ -137,16 +137,13 @@ class Room(Side):
         self.set_direction(direction, room)
 
     def get_direction(self, dir_name: str) -> Side:
-        if dir_name in cardinal:
-            return self.connected_rooms[dir_name]
-        raise ValueError(f"{dir_name!r}: invalid direction")
+        assert dir_name in cardinal, f"{dir_name!r}: invalid direction"
+        return self.connected_rooms[dir_name]
 
-    def set_direction(self, dir_name: str, room: Side) -> None:
-        assert isinstance(room, Room)
-        if dir_name in cardinal:
-            self.connected_rooms[dir_name] = room
-            return
-        raise ValueError(f"{dir_name!r}: invalid direction")
+    def set_direction(self, dir_name: str, side: Side) -> None:
+        assert isinstance(side, Side)
+        assert dir_name in cardinal, f"{dir_name!r}: invalid direction"
+        self.connected_rooms[dir_name] = side
 
     def get_neighbours(self) -> list[Side]:
         """Return a list of rooms in each of the N, S, E, W directions."""
@@ -173,13 +170,22 @@ cardinal = {
 }
 
 
-def roomgrid(x_size: int, y_size: int) -> list[list[Room]]:
+def roomgrid(x_size: int, y_size: int) -> list[list[Side]]:
     """Generate a grid of rooms with dimensions x-by-y"""
+    boundary = Boundary()
+    wall = Wall()
     grid = []
     for x in range(x_size):
         grid.append([])
         for y in range(y_size):
             grid[x].append(Room(Coord(x, y)))
+    # Set boundaries
+    for x in range(x_size):
+        grid[x][0].set_direction("NORTH", boundary)
+        grid[x][y_size - 1].set_direction("SOUTH", boundary)
+    for y in range(y_size):
+        grid[0][y].set_direction("WEST", boundary)
+        grid[x_size - 1][y].set_direction("EAST", boundary)
     return grid            
 
 
