@@ -1,5 +1,5 @@
 #File containing the code for the game
-import random
+from random import randint, random, choice, shuffle
 from typing import Any
 
 import action
@@ -43,7 +43,7 @@ def dice_roll(odds: float) -> bool:
     + odds: float
       a value between 0 to 1.0
     """
-    return random.random() <= odds
+    return random() <= odds
 
 
 class LabyrinthManager:
@@ -93,23 +93,23 @@ class LabyrinthManager:
         displays a message based on distance and direction.
         """
         if dice_roll(20/100):
-            print(random.choice(text.clues_noclue))
+            print(choice(text.clues_noclue))
             return None
         r, dirstr = self._r_dir_calc(self.steve_pos, self.boss_pos)
         if r == 0:
            # They are in the same room, a clue doesn't need to be given LOL
             return
         if r < 3:
-            print(random.choice(text.clues_shortrange))
+            print(choice(text.clues_shortrange))
         elif r < 6:
             if dice_roll(1/100):
                 print(text.easter_egg)
             else:
-                print(random.choice(text.clues_mediumrange))
+                print(choice(text.clues_mediumrange))
         elif r < 10:
-            print(random.choice(text.clues_longrange))
+            print(choice(text.clues_longrange))
         else:
-            print(random.choice(text.clues_distant))
+            print(choice(text.clues_distant))
 
         print(text.clues_direction(dirstr))
 
@@ -211,7 +211,7 @@ class MUDGame:
         happen.
         """
         directions = list(cardinal.values())
-        random.shuffle(directions)
+        shuffle(directions)
         for direction in directions:
             if self.maze.can_move_here(self.boss_pos, direction):
                 self.boss_pos = self.boss_pos.add(direction)
@@ -349,7 +349,7 @@ class MUDGame:
         for dir_name, dir_coord in cardinal.items():
             if self.maze.can_move_here(current_location, dir_coord):
                   available_dir.append(dir_name)
-        random_dir = random.choice(available_dir)
+        random_dir = choice(available_dir)
         self.move_steve(random_dir)
         print(text.escape_success)
 
@@ -399,7 +399,7 @@ class MUDGame:
             print(text.game_win)
         else:
             print(text.game_lose)
-        print(f"Score: {random.randint(0, 10000)}")
+        print(f"Score: {randint(0, 10000)}")
 
     def run(self):
         """Run the game"""
