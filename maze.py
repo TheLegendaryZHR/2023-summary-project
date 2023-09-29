@@ -197,7 +197,6 @@ def opposite(direction: str) -> str:
 def roomgrid(x_size: int, y_size: int) -> list[list[Side]]:
     """Generate a grid of rooms with dimensions x-by-y"""
     boundary = Boundary()
-    wall = Wall()
     grid = []
     for x in range(x_size):
         grid.append([])
@@ -247,11 +246,11 @@ class Maze:
             return False
         return True
 
-    def get(self, coord: Coord) -> "Room":
-        """Returns the room at the given coordinates"""
+    def get(self, coord: Coord) -> "Side":
+        """Returns the side at the given coordinates"""
         return self.lab[coord.x][coord.y]
 
-    def set(self, coord: Coord, room: "Room") -> None:
-        """Returns the room at the given coordinates"""
-        assert isinstance(room, Room)
-        self.lab[coord.x][coord.y] = room
+    def set(self, coord: Coord, side: "Side") -> None:
+        """Sets the side at the given coordinates"""
+        assert isinstance(side, Side)
+        self.lab[coord.x][coord.y] = side
