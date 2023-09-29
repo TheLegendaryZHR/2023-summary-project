@@ -1,5 +1,4 @@
 #File containing the code for the game
-import math
 import random
 from typing import Any
 
@@ -9,16 +8,9 @@ import create
 import data
 import text
 from generator import Random
-from maze import cardinal, Coord, Maze, Room
-
+from maze import Coord, Maze, Room, cardinal
 
 BOSS = "King Warden"
-
-
-NORTH = "NORTH"
-SOUTH = "SOUTH"
-EAST = "EAST"
-WEST = "WEST"
 
 
 LABSIZE = 10
@@ -90,15 +82,14 @@ class LabyrinthManager:
         Calculates which direction, N, S, E, W, NE, NW, SE, SW
         displays a message based on distance and direction.
         """
-        displacement = self.steve_pos.direction_of(self.boss_pos)
-        if displacement.is_zero():
-            # They are in the same room, a clue doesn't need to be given LOL
-            return None
         i = random.randint(0, 100)
         if i <= 20:
             print(random.choice(text.clues_noclue))
             return None
-        r, dirstr = self._r_dir_calc(displacement)
+        r, dirstr = self._r_dir_calc(self.steve_pos, self.boss_pos)
+        if r == 0:
+           # They are in the same room, a clue doesn't need to be given LOL
+            return
         if r < 3:
             print(random.choice(text.clues_shortrange))
         elif r < 6:
@@ -120,48 +111,29 @@ class LabyrinthManager:
         coord1 (origin) to coord2 (destination).
         Returns r and direction
         """
-        direction = self.steve_pos.direction_of(self.boss_pos)
+        direction = coord1.direction_of(coord2)
         if direction.is_zero():
             return (0, "NONE")
         r = direction.length()
         angle = direction.bearing()
-        if coord.y > 0:
-            if coord.x > 0:
-                theta = basic  # 1st quadrant
-            elif coord.x < 0:
-                theta = PI - basic  # 2nd quadrant
-            else:
-                theta = PI / 2  # up
-        elif coord.y < 0:
-            if coord.x < 0:
-                theta = PI + basic  # 3rd quadrant
-            elif coord.x > 0:
-                theta = 2 * PI - basic  # 4th quadrant
-            else:
-                theta = 3 * PI / 2  # down
-        elif coord.y == 0:
-            if coord.x > 0:
-                theta = 0  # right
-            if coord.x < 0:
-                theta = PI  # left
-        dirstr = None
-        dirstrlist = [
-            "EAST", "NORTHEAST", "NORTH", "NORTHWEST", "WEST", "SOUTHWEST",
-            "SOUTH", "SOUTHEAST"
-        ]
-        if theta <= PI / 8 or theta > 15 * PI / 8:
-            dirstr = dirstrlist[0]
-        lowerbound = PI / 8
-        upperbound = lowerbound + PI / 4
-        i = 1
-        while i <= 7 and dirstr is not None:
-            if i > lowerbound and i <= upperbound:
-                dirstr = dirstrlist[i]
-            i += 1
-            lowerbound += PI / 4
-            upperbound += PI / 4
-        assert dirstr is not None
-        return r, dirstr
+        # Positive is rightwards and downwards
+        if -PI/8 < angle <= PI/8:
+            return (r, "EAST")
+        if PI/8 < angle <= 3*PI/8:
+            return (r, "SOUTHEAST")
+        if 3*PI/8 < angle <= 5*PI/8:
+            return (r, "SOUTH")
+        if 5*PI/8 < angle <= 7*PI/8:
+            return (r, "SOUTHWEST")
+        if angle <= -7*PI/8 or angle > 7*PI/8:
+            return (r, "WEST")
+        if -7*PI/8 < angle <= -5*PI/8:
+            return (r, "NORTHWEST")
+        if -5*PI/8 < angle <= -3*PI/8:
+            return (r, "NORTH")
+        if -3*PI/8 < angle <= -PI/8:
+            return (r, "NORTHEAST")
+        raise AssertionError
 
 
 class MUDGame:
