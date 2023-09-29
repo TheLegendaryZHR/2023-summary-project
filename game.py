@@ -119,9 +119,9 @@ class LabyrinthManager:
         Finds r and theta using x and y (polar coordinates system)
         returns r and direction
         """
-        displacement = self.steve_pos.direction_of(self.boss_pos)
-        if displacement.is_zero():
-            return None
+        direction = self.steve_pos.direction_of(self.boss_pos)
+        if direction.is_zero():
+            return (0, "NONE")
         r = math.sqrt((coord.x**2) + (coord.y**2))  # Pythagorean theorem
         basic = abs(math.atan(coord.y / coord.x))
         if coord.y > 0:
