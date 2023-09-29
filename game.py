@@ -114,15 +114,16 @@ class LabyrinthManager:
 
         print(text.clues_direction(dirstr))
 
-    def _r_dir_calc(self, coord: Coord) -> tuple[float, str]:
+    def _r_dir_calc(self, coord1: Coord, coord2: Coord) -> tuple[float, str]:
         """maths work for _give_sound_clue
-        Finds r and theta using x and y (polar coordinates system)
-        returns r and direction
+        Determines the distance (r: float) and direction (:str) from
+        coord1 (origin) to coord2 (destination).
+        Returns r and direction
         """
         direction = self.steve_pos.direction_of(self.boss_pos)
         if direction.is_zero():
             return (0, "NONE")
-        r = math.sqrt((coord.x**2) + (coord.y**2))  # Pythagorean theorem
+        r = direction.length()
         basic = abs(math.atan(coord.y / coord.x))
         if coord.y > 0:
             if coord.x > 0:

@@ -3,6 +3,7 @@
 This module contains classes and functions used to manage
 locations in the game.
 """
+import math
 
 
 class Coord:
@@ -42,6 +43,9 @@ class Coord:
 
     def is_zero(self) -> bool:
         return self.x == 0 and self.y == 0
+
+    def length(self) -> float:
+        return math.sqrt(self.x**2 + self.y**2)
 
     def direction_of(self, neighbour: "Coord") -> "Coord":
         return Coord(neighbour.x - self.x, neighbour.y - self.y)
