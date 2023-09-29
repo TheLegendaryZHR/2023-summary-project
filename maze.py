@@ -16,8 +16,15 @@ class Coord:
         self.x = x
         self.y = y
 
+    def __repr__(self) -> str:
+        return f"Coord{str(self)}"
+
     def __str__(self) -> str:
         return f"({self.x}, {self.y})"
+
+    def __eq__(self, coord: "Coord") -> bool:
+        """Implements support for == operator"""
+        return (self.x == coord.x) and (self.y == coord.y)
 
     def add(self, coord: "Coord") -> "Coord":
         """Returns a Coord that is the sum of self and coord"""
@@ -34,7 +41,7 @@ class Coord:
         return False
 
     def is_same(self, coord: "Coord") -> bool:
-        return (self.x == coord.x) and (self.y == coord.y)
+        return self == coord
 
     def is_zero(self) -> bool:
         return self.x == 0 and self.y == 0
