@@ -71,8 +71,12 @@ class LabyrinthManager:
         return thisroom.dir_is_accessible(direction)
 
     def get_room(self, coord: Coord) -> "Room":
-        """Returns the room at the given coordinates"""
-        return self.lab.get(coord)
+        """Returns the room at the given coordinates.
+        Result is assumed to be a valid room; do any required validation checks first.
+        """
+        room = self.lab.get(coord)
+        assert isinstance(room, Room)
+        return room
 
     def set_room(self, coord: Coord, room: "Room") -> None:
         """Returns the room at the given coordinates"""
