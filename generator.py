@@ -257,8 +257,10 @@ class RecursiveBacktrace(LabyrinthGenerator):
         
     def generate(self) -> None:
         # Start in top row
-        coord = Coord(random.randint(0, self.maze.y_size), 0)
-        self.explore(self.maze.get(coord))
+        coord = Coord(random.randint(0, self.maze.y_size - 1), 0)
+        room = self.maze.get(coord)
+        assert isinstance(room, Room)
+        self.explore(room)
 
     def visit(self, coord: Coord) -> None:
         assert isinstance(coord, Coord)
@@ -285,11 +287,12 @@ class RecursiveBacktrace(LabyrinthGenerator):
         while choices:
             # Skip visited neighbours and boundaries
             direction, change = choices.pop()
-            new_coord = room.coord.add(change)
-            if new_coord in self.visited:
-                continue
             side = room.get_direction(direction)
             if side.is_boundary():
+                continue
+            new_coord = room.coord.add(change)
+            assert new_coord.x >= 0 and new_coord.y >= 0, f"{room.coord}: {direction} should be a boundary"
+            if new_coord in self.visited:
                 continue
             # Any rooms found should have been visited
             # and therefore skipped earlier
