@@ -248,13 +248,15 @@ class RecursiveBacktrace(LabyrinthGenerator):
     2. Visit a random unvisited neighbour and carve through the adjoining wall
     3. Repeat until it is not possible to proceed.
     4. Go back to the last room with unvisited neighbours and repeat.
+
+    Reference: http://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
     """
     def __init__(self, x_size: int, y_size: int):
         super().__init__(x_size, y_size)
         self.visited = []
         
     def generate(self) -> None:
-        # Start
+        # Start in top row
         coord = Coord(random.randint(0, self.maze.y_size), 0)
         self.explore(self.maze.get(coord))
 
@@ -303,4 +305,4 @@ class RecursiveBacktrace(LabyrinthGenerator):
             # Side is wall, new_coord is unvisited
             self.dig(room, direction)
             self.explore(self.maze.get(new_coord))
-                   
+    
