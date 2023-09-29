@@ -232,7 +232,7 @@ class Random(LabyrinthGenerator):
         
         """
         number_of_unconnected = 0
-        for column in self.lab:
+        for column in self.maze.lab:
             for room in column:
                 # room is an instance of the Room class
                 if not room.is_connected_tostart:
@@ -254,6 +254,53 @@ class RecursiveBacktrace(LabyrinthGenerator):
         self.visited = []
         
     def generate(self) -> None:
-        start = Coord(random.randint(0, self.maze.y_size), 0)
-        
-        
+        # Start
+        coord = Coord(random.randint(0, self.maze.y_size), 0)
+        self.explore(self.maze.get(coord))
+
+    def visit(self, coord: Coord) -> None:
+        assert isinstance(coord, Coord)
+        assert coord not in self.visited
+        self.visited.append(coord)
+
+    def dig(self, room: Room, direction: str) -> None:
+        def opposite(direction: str) -> str:
+            if direction == "NORTH":
+                return "SOUTH"
+            if direction == "SOUTH":
+                return "NORTH"
+            if direction == "EAST":
+                return "WEST"
+            if direction == "WEST":
+                return "EAST"
+            raise AssertionError
+
+        new_coord = room.coord.add(cardinal[direction])
+        new_room = self.maze.get(new_coord)
+        room.set_direction(direction, new_room)
+        assert new_room.get_direction(opposite(direction)).is_wall()
+        new_room.set_direction(opposite(direction), room)
+
+    def explore(self, room: Room) -> None:
+        self.visit(room.coord)
+        choices = list(cardinal.items())
+        random.shuffle(choices)
+        while choices:
+            # Skip visited neighbours and boundaries
+            direction, change = choices.pop()
+            new_coord = room.coord.add(change)
+            if new_coord in self.visited:
+                continue
+            side = room.get_direction(direction)
+            if side.is_boundary():
+                continue
+            # Any rooms found should have been visited
+            # and therefore skipped earlier
+            assert not side.is_room(), (
+                f"At {room.coord}: {new_coord}"
+                " has a room that is not visited"
+            )
+            # Side is wall, new_coord is unvisited
+            self.dig(room, direction)
+            self.explore(self.maze.get(new_coord))
+                   

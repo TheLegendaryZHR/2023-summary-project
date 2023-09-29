@@ -15,6 +15,9 @@ class Coord:
         self.x = x
         self.y = y
 
+    def __str__(self) -> str:
+        return f"({self.x}, {self.y})"
+
     def add(self, coord: "Coord") -> "Coord":
         """Returns a Coord that is the sum of self and coord"""
         return Coord(self.x + coord.x, self.y + coord.y)
