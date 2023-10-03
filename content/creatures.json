@@ -1,1 +1,28 @@
-[{"name": "Zombie", "base_hp": 20, "base_atk": 5},{"name": "Creeper", "base_hp": 5, "base_atk": 15}]
+[
+    {
+        "name": "Zombie",
+        "base_hp": 20,
+        "base_atk": 5,
+        "actions": {
+            "Attack": {"value": 20}
+        }
+    },
+    {
+        "name": "Creeper",
+        "base_hp": 5,
+        "base_atk": 15,
+        "actions": {
+            "Explode": {}
+        }
+    },
+    {
+        "name": "King Warden",
+        "base_hp": 100,
+        "base_atk": 10,
+        "actions": {
+            "Attack": {"value": 10},
+            "Heal": {"value": 15},
+            "Sonic Boom": {"value": 0}
+        }
+    }
+]
