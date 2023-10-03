@@ -14,6 +14,7 @@ BOSS = "King Warden"
 
 
 LABSIZE = 10
+VARIANCE = 0.1
 
 
 PI = 3.14159265359
@@ -318,7 +319,7 @@ class MUDGame:
                              actee: character.Combatant) -> None:
         if isinstance(choice, action.Attack):
             damage = choice.do()
-            damage = int(spread(damage, 0.1))
+            damage = int(spread(damage, VARIANCE))
             self.handle_attack(actor, actee, damage)
             print(text.creature_dealdmg(actor.name, damage))
         elif isinstance(choice, action.Heal):
