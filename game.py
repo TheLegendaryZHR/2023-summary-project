@@ -46,6 +46,17 @@ def dice_roll(odds: float) -> bool:
     return random() <= odds
 
 
+def spread(value: int | float, variance: float) -> float:
+    """Takes a numeric value.
+    "Spreads" it, returning a result between (value * (1 + variance)) and (value * (1 - variance)).
+    Variance must be between 0 to 1.
+    """
+    assert 0 <= variance < 1
+    deviation = random.random() * variance
+    sign = random.choice([-1, 1])
+    return value + (sign * deviation)
+
+
 class LabyrinthManager:
     """This class encapsulates access to the labyrinth grid
     -- ATTRIBUTES --
@@ -307,6 +318,7 @@ class MUDGame:
                              actee: character.Combatant) -> None:
         if isinstance(choice, action.Attack):
             damage = choice.do()
+            damage = int(spread(damage, 0.1))
             self.handle_attack(actor, actee, damage)
             print(text.creature_dealdmg(actor.name, damage))
         elif isinstance(choice, action.Heal):
